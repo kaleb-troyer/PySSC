@@ -911,7 +911,7 @@ if __name__=='__main__':
         mat = mat, 
         geo = geo, 
     )
-
+    
     model.profile()
     model.display(joinx=True, joiny=True, joinz=False, savefig=False)
 
