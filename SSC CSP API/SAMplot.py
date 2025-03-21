@@ -1139,8 +1139,8 @@ if __name__=='__main__':
     samplt = SAMplot(source, dtypes=dtypes)
     samplt.normalize(params, params.levelized_cost_of_energy, 65.50304439)
 
-    samplt.x = params.eta_thermal_calc
-    samplt.y = params.levelized_cost_of_energy_norm
+    samplt.x = params.PHX_cost_basis
+    samplt.y = params.m_dot_htf_des
     samplt.z = params.PHX_hot_in
 
     samplt.legend = False
@@ -1155,15 +1155,15 @@ if __name__=='__main__':
         (params.PHX_dT_cold, lambda x: x == 20), 
         (params.rec_eta_mod, lambda x: x >= 0.99), 
         # (params.PHX_dT_hot, lambda x: x == 240), 
-        (params.PHX_hot_in, lambda x: x <= 950), 
-        (params.PHX_cost_basis, lambda x: x == 100), 
-        (params.levelized_cost_of_energy, lambda x: x <= 60), 
-        # (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+        # (params.PHX_hot_in, lambda x: x <= 950), 
+        # (params.PHX_cost_basis, lambda x: x == 100), 
+        # (params.levelized_cost_of_energy, lambda x: x <= 60), 
+        (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
     )
 
-    # samplt.build()
-    # samplt.save(name='Best System')
-    # samplt.show()
+    samplt.build()
+    samplt.show()
+    quit()
 
     def phx_design_space(): 
 
