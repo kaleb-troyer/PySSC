@@ -463,19 +463,19 @@ class System():
 
 if __name__=='__main__': 
 
-    print("current processID:", os.getpid(), "\n");
+    print("current processID:", os.getpid(), "\n") 
 
     system = System(newrun=True, file='solutions.csv')
     system.update({
         'try_simple_cycle'     : 1,      # [-]
         'receiver_eta_mod'     : 1.0,    # [-]
         'heliostat_cost'       : 75,     # [$/m^2]
-        'T_htf_hot_des'        : 1010,    # [C] 
+        'T_htf_hot_des'        : 1010,   # [C] 
         'opt_penalty'          : 1,      # [-] 
         'opt_logging'          : 0,      # [-] 
         'LTR_min_dT_des_in'    : 5,      # [C] 
         'HTR_min_dT_des_in'    : 5,      # [C] 
-        'dT_PHX_hot_approach'  : 280.0,   # [C] 
+        'dT_PHX_hot_approach'  : 280.0,  # [C] 
         'dT_PHX_cold_approach' : 20.0,   # [C] 
         'PHX_cost_model'       : 100.0,  # [-]
         'gross_to_net'         : 0.98,   # [-]

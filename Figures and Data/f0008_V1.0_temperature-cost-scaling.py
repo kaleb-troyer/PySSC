@@ -164,8 +164,8 @@ class AlloySelector():
 if __name__ == '__main__': 
 
     # show plots? 
-    A = False
-    B = False
+    A = True
+    B = True
     C = True
     D = True
     E = True

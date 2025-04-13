@@ -510,7 +510,7 @@ if __name__=='__main__':
     )
 
     model = Pyflow(
-        Model.Pipe(D=0.003, L=0.6, v=10, e=(5e-4)/0.003), 
+        Model.Pipe(D=0.003, L=0.6, v=10, e=5e-4), 
         fluid
     )
 
