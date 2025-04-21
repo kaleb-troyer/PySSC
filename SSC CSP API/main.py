@@ -470,7 +470,7 @@ if __name__=='__main__':
         'try_simple_cycle'     : 1,      # [-]
         'receiver_eta_mod'     : 1.0,    # [-]
         'heliostat_cost'       : 75,     # [$/m^2]
-        'T_htf_hot_des'        : 1010,   # [C] 
+        'T_htf_hot_des'        : 700,    # [C] 
         'opt_penalty'          : 1,      # [-] 
         'opt_logging'          : 0,      # [-] 
         'LTR_min_dT_des_in'    : 5,      # [C] 
@@ -485,8 +485,8 @@ if __name__=='__main__':
     system.update(prebuilt='maxeta')
     system.optimize(savefig=True)
 
-    system.update(prebuilt='minlcoe')
-    system.optimize(savefig=True)
+    # system.update(prebuilt='minlcoe')
+    # system.optimize(savefig=True)
 
     # system.update(prebuilt='minlcoe')
     # system.parametric(params={

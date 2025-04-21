@@ -47,6 +47,19 @@ def get_reflectance(n2, k2, n1=1.0, th=0):
 
     return (rhTE + rhTM) / 2
 
+def get_semitransparent(rho, la, th): 
+
+    th = np.deg2rad(th)
+    di = 0.1
+    ki = 0.2
+    Ki = 4 * np.pi * ki / (la * 1e-6)
+    tau = np.exp(-Ki * di / np.cos(th))
+
+    Tset = (tau * (1 - rho)**2) / (1 - rho**2 * tau**2)
+    Rset = rho * (1 + (((1 - rho)**2 * tau**2) / (1 - rho**2 * tau**2)))
+    Aset = 1 - Tset - Rset
+    return Tset, Rset, Aset
+
 def ep_la(la, df, th):
     '''
     la1 [um]    band wavelength start
@@ -56,7 +69,11 @@ def ep_la(la, df, th):
     n = np.interp(la, df['la'], df['n'])
     k = np.interp(la, df['la'], df['k'])
     rh_la = get_reflectance(n, k, th=th)
-    return 1 - rh_la
+    if k==0: 
+        Tset, Rset, Aset = get_semitransparent(rh_la, la, th)
+        return Aset
+    else: 
+        return 1 - rh_la
 
 def get_emittance(la1=0, la2=np.inf, T=500, material='Nickel', angle=0): 
     '''
@@ -65,7 +82,7 @@ def get_emittance(la1=0, la2=np.inf, T=500, material='Nickel', angle=0):
     la2 [um]    band wavelength close
     '''
 
-    if material not in ['Nickel', 'Chromium', 'Tungsten', 'Iron', 'Cobalt']: 
+    if material not in ['Nickel', 'Chromium', 'Tungsten', 'Iron', 'Cobalt', 'Silica', 'Alumina']: 
         raise ValueError(f'Material ({material}) not recognized.')
 
     file = f'{material}.csv'
@@ -92,24 +109,30 @@ def get_emittance(la1=0, la2=np.inf, T=500, material='Nickel', angle=0):
 if __name__=='__main__': 
 
     Tsun = 1000     # [K]   for absorptance, use origin temperature
-    frNi = 0.57     # [-]   Hanes 230 alloy composition: Nickel fraction
-    frCr = 0.22     # [-]   Hanes 230 alloy composition: Chromium fraction
-    frW_ = 0.14     # [-]   Hanes 230 alloy composition: Tungsten fraction
-    frFe = 0.02     # [-]   Hanes 230 alloy composition: Iron fraction
-    frCo = 0.05     # [-]   Hanes 230 alloy composition: Cobalt fraction
+    la1 = 0.
+    la2 = 20
 
-    epNi = get_emittance(la1=0, la2=20, T=Tsun, material='Nickel')
-    epCr = get_emittance(la1=0, la2=20, T=Tsun, material='Chromium')
-    epW_ = get_emittance(la1=0, la2=20, T=Tsun, material='Tungsten')
-    epFe = get_emittance(la1=0, la2=20, T=Tsun, material='Iron')
-    epCo = get_emittance(la1=0, la2=20, T=Tsun, material='Cobalt')
-    total = epNi * frNi + epCr * frCr + epW_ * frW_ + epFe * frFe + epCo * frCo
+    # frNi = 0.57     # [-]   Hanes 230 alloy composition: Nickel fraction
+    # frCr = 0.22     # [-]   Hanes 230 alloy composition: Chromium fraction
+    # frW_ = 0.14     # [-]   Hanes 230 alloy composition: Tungsten fraction
+    # frFe = 0.02     # [-]   Hanes 230 alloy composition: Iron fraction
+    # frCo = 0.05     # [-]   Hanes 230 alloy composition: Cobalt fraction
 
-    print(f'Nickel   = {epNi*100:5.2f}% (wt = {frNi*100:2.0f}%)')
-    print(f'Chromium = {epCr*100:5.2f}% (wt = {frCr*100:2.0f}%)')
-    print(f'Tungsten = {epW_*100:5.2f}% (wt = {frW_*100:2.0f}%)')
-    print(f'Iron     = {epFe*100:5.2f}% (wt = {frFe*100:2.0f}%)')
-    print(f'Cobalt   = {epCo*100:5.2f}% (wt = {frCo*100:2.0f}%)')
-    print(f'Total Absorptivity = {100*total:.2f}%')
+    # epNi = get_emittance(la1=la1, la2=la2, T=Tsun, material='Nickel')
+    # epCr = get_emittance(la1=la1, la2=la2, T=Tsun, material='Chromium')
+    # epW_ = get_emittance(la1=la1, la2=la2, T=Tsun, material='Tungsten')
+    # epFe = get_emittance(la1=la1, la2=la2, T=Tsun, material='Iron')
+    # epCo = get_emittance(la1=la1, la2=la2, T=Tsun, material='Cobalt')
+    # total = epNi * frNi + epCr * frCr + epW_ * frW_ + epFe * frFe + epCo * frCo
+
+    # print(f'Nickel   = {epNi*100:5.2f}% (wt = {frNi*100:2.0f}%)')
+    # print(f'Chromium = {epCr*100:5.2f}% (wt = {frCr*100:2.0f}%)')
+    # print(f'Tungsten = {epW_*100:5.2f}% (wt = {frW_*100:2.0f}%)')
+    # print(f'Iron     = {epFe*100:5.2f}% (wt = {frFe*100:2.0f}%)')
+    # print(f'Cobalt   = {epCo*100:5.2f}% (wt = {frCo*100:2.0f}%)')
+    # print(f'Total Absorptivity = {100*total:.2f}%')
     
+    epSiO2 = get_emittance(la1=la1, la2=la2, T=Tsun, material='Alumina')
+    print(f'Alumina = {epSiO2*100:5.2f}%')
+
 
