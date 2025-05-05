@@ -1,4 +1,5 @@
 
+import os
 import numpy as np
 import pandas as pd
 import addcopyfighandler
@@ -15,7 +16,9 @@ def linear(x, m, b):
 def exponential(x, a, b, c, d): 
     return a * np.exp(b * (x + c)) + d
 
-df = pd.read_csv('mass_flow_rates.csv')
+file = '2025-03-13_mass-flow-rates.csv'
+path = os.path.join(os.getcwd(), 'Figures and Data', 'data')
+df = pd.read_csv(os.path.join(path, file))
 print(df)
 
 x_data = df['Valve']

@@ -1160,7 +1160,7 @@ if __name__=='__main__':
         # (params.levelized_cost_of_energy, lambda x: x <= 60), 
         (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
     )
-
+    
     samplt.build()
     samplt.show()
     quit()
