@@ -482,21 +482,21 @@ if __name__=='__main__':
         'W_dot_net_des'        : 100.0,  # [MWe]
     })
 
-    system.update(prebuilt='maxeta')
-    system.optimize(savefig=True)
+    # system.update(prebuilt='maxeta')
+    # system.optimize(savefig=True)
 
     # system.update(prebuilt='minlcoe')
     # system.optimize(savefig=True)
 
-    # system.update(prebuilt='minlcoe')
-    # system.parametric(params={
-    #     'W_dot_net_des'       : [100], 
-    #     'heliostat_cost'      : np.arange(50, 75, 5),  
-    #     # 'PHX_cost_model'      : np.arange(130, 151, 10), 
-    #     'dT_PHX_hot_approach' : np.arange(160, 241, 10), 
-    #     # 'dT_PHX_cold_approach': np.arange(20, 101, 10), 
-    #     'T_htf_hot_des'       : np.arange(900, 951, 10)
-    # }, cores=4)
+    system.update(prebuilt='minlcoe')
+    system.parametric(params={
+        'W_dot_net_des'       : [100], 
+        'heliostat_cost'      : np.arange(50, 100, 5),  
+        'PHX_cost_model'      : np.arange(60, 1001, 20), 
+        'dT_PHX_hot_approach' : np.arange(100, 301, 10), 
+        'dT_PHX_cold_approach': np.arange(20, 101, 20), 
+        'T_htf_hot_des'       : np.arange(700, 1100, 20)
+    }, cores=4)
 
 
 
