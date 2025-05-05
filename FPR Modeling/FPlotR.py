@@ -294,22 +294,15 @@ class FPlotR():
         self.data_full_set = self.data_full_set.copy()
 
     def newparam(self, params: Parameters=None, name: str='', repr: str='', units: str='[-]', operation: str='+', args: list=[]): 
-
-        # Helper function to get the attribute name
-        def get_attr_name(params, param):
-            for name, value in vars(params).items():
-                if value is param:
-                    return name
-            raise ValueError("Parameter not found as an attribute of the given object.")
-
+        
         # Creating the parameter
         structure = Struct(
-            key = name,
-            repr = repr,
-            units = units,
-            dtype = float,
-            default = None,
-            value = None
+            key=name,
+            repr=repr,
+            units=units,
+            dtype=float,
+            default=None,
+            value=None
         )
 
         setattr(params, name, structure)
@@ -317,9 +310,13 @@ class FPlotR():
         # Calculating the data and adding it to the data set
         if structure.key not in self.data_full_set.columns:
             new_col_vals = pd.Series(self.data_full_set[args[0].key])
-            for param in args[1:]: 
-                if param.key in self.data_full_set.columns:
+            for param in args[1:]:
+                if param.key not in self.data_full_set.columns:
+                    raise KeyError(f"'{param.key}' not found in data_full_set.")
 
+                if callable(operation):
+                    new_col_vals = operation(self.data_full_set, *args)
+                else:
                     operation = operation.lower().strip()
                     ops = {
                         # Multiplication
@@ -357,24 +354,103 @@ class FPlotR():
                         'decrease':    lambda x, y: x - y,
                     }
 
-                    try: new_col_vals = ops[operation](new_col_vals, self.data_full_set[param.key])
+                    try:
+                        new_col_vals = ops[operation](new_col_vals, self.data_full_set[param.key])
                     except KeyError:
                         raise ValueError(f"Unsupported operation: {operation}")
 
-                else: raise KeyError(f"'{param.key}' not found in data_full_set.")
-
             new_col_vals.name = structure.key
             self.data_full_set = pd.concat([
-                    self.data_full_set, 
-                    new_col_vals, 
-                ], axis=1
-            )
+                self.data_full_set,
+                new_col_vals,
+            ], axis=1)
 
         else:
             print(f"'{structure.key}' already exists in data_full_set.")
 
-        # Optionally, make a copy of the DataFrame to reduce fragmentation
         self.data_full_set = self.data_full_set.copy()
+
+
+        # # Helper function to get the attribute name
+        # def get_attr_name(params, param):
+        #     for name, value in vars(params).items():
+        #         if value is param:
+        #             return name
+        #     raise ValueError("Parameter not found as an attribute of the given object.")
+
+        # # Creating the parameter
+        # structure = Struct(
+        #     key = name,
+        #     repr = repr,
+        #     units = units,
+        #     dtype = float,
+        #     default = None,
+        #     value = None
+        # )
+
+        # setattr(params, name, structure)
+
+        # # Calculating the data and adding it to the data set
+        # if structure.key not in self.data_full_set.columns:
+        #     new_col_vals = pd.Series(self.data_full_set[args[0].key])
+        #     for param in args[1:]: 
+        #         if param.key in self.data_full_set.columns:
+
+        #             operation = operation.lower().strip()
+        #             ops = {
+        #                 # Multiplication
+        #                 'mul':         lambda x, y: x * y,
+        #                 'multiply':    lambda x, y: x * y,
+        #                 'multiplication': lambda x, y: x * y,
+        #                 '*':           lambda x, y: x * y,
+        #                 'times':       lambda x, y: x * y,
+        #                 'product':     lambda x, y: x * y,
+        #                 'x':           lambda x, y: x * y,
+
+        #                 # Division
+        #                 'div':         lambda x, y: x / y,
+        #                 'divide':      lambda x, y: x / y,
+        #                 'division':    lambda x, y: x / y,
+        #                 '/':           lambda x, y: x / y,
+        #                 'quotient':    lambda x, y: x / y,
+        #                 'over':        lambda x, y: x / y,
+
+        #                 # Addition
+        #                 'add':         lambda x, y: x + y,
+        #                 'addition':    lambda x, y: x + y,
+        #                 '+':           lambda x, y: x + y,
+        #                 'sum':         lambda x, y: x + y,
+        #                 'plus':        lambda x, y: x + y,
+        #                 'increase':    lambda x, y: x + y,
+
+        #                 # Subtraction
+        #                 'sub':         lambda x, y: x - y,
+        #                 'subtract':    lambda x, y: x - y,
+        #                 'subtraction': lambda x, y: x - y,
+        #                 '-':           lambda x, y: x - y,
+        #                 'minus':       lambda x, y: x - y,
+        #                 'difference':  lambda x, y: x - y,
+        #                 'decrease':    lambda x, y: x - y,
+        #             }
+
+        #             try: new_col_vals = ops[operation](new_col_vals, self.data_full_set[param.key])
+        #             except KeyError:
+        #                 raise ValueError(f"Unsupported operation: {operation}")
+
+        #         else: raise KeyError(f"'{param.key}' not found in data_full_set.")
+
+        #     new_col_vals.name = structure.key
+        #     self.data_full_set = pd.concat([
+        #             self.data_full_set, 
+        #             new_col_vals, 
+        #         ], axis=1
+        #     )
+
+        # else:
+        #     print(f"'{structure.key}' already exists in data_full_set.")
+
+        # # Optionally, make a copy of the DataFrame to reduce fragmentation
+        # self.data_full_set = self.data_full_set.copy()
 
     def show(self): 
         '''
@@ -563,7 +639,7 @@ class FPlotR():
             features = [self.x.key]    
 
         points = np.array(points)
-        X = points[:, :-1]
+        X = pd.DataFrame(points[:, :-1], columns=features)
         Y = points[:,  -1]
 
         # Example: fitting to sample data
@@ -574,7 +650,6 @@ class FPlotR():
             unary_operators=["sqrt", "log", "exp", "sin", "cos"],
             extra_sympy_mappings={"square": lambda x: x**2},
             verbosity=1,
-            feature_names=features, 
             select_k_features=3 
         )
 
@@ -1035,72 +1110,124 @@ if __name__=='__main__':
     params = Parameters()
     losses = [params.q_advective, params.q_reflective, params.q_conductive, params.q_radiative]
     dtypes = {par.key: par.dtype for par in params.get()}
-    parplt = FPlotR(source, dtypes=dtypes)
+    fprplt = FPlotR(source, dtypes=dtypes)
     
     for loss in losses: 
-        parplt.normalize(
+        fprplt.normalize(
             params, loss, 
-            sum([parplt.data_full_set[params.q_des_o.key][0]] + [parplt.data_full_set[x.key][0] for x in losses])
+            sum([fprplt.data_full_set[params.q_des_o.key][0]] + [fprplt.data_full_set[x.key][0] for x in losses])
         )
 
-    parplt.newparam(
+    fprplt.newparam(
         params, 'dT', 'Receiver Temperature Change', '[C]', '-', [params.T_des_o, params.T_des_i] 
     )
 
-    parplt.x = params.T_des_o
-    parplt.y = params.T_des_i
-    parplt.z = params.efficiency
+    fprplt.x = params.q_des_o
+    fprplt.y = params.efficiency
+    # fprplt.z = params.efficiency
 
-    parplt.legend = False 
-    parplt.plot3d = True
-    parplt.scatter = True
-    parplt.colorbar = False
-    parplt.grayscale = False 
-    parplt.linelabels = False 
+    fprplt.legend = False 
+    fprplt.plot3d = True
+    fprplt.scatter = True
+    fprplt.colorbar = False
+    fprplt.grayscale = False 
+    fprplt.linelabels = False 
 
-    for par in parplt.data_full_set[params.T_des_i.key].unique(): 
+    fprplt.filter(
+        (params.T_des_i, lambda x: x == 550),
+        (params.q_des_o, (max, params.efficiency)) 
+    ) 
 
-        parplt.filter(
-            (params.T_des_i, lambda x: x == par),
-            (params.q_des_o, lambda x: x == 200), 
-            (params.T_des_o, (max, params.efficiency)) 
-        ) 
-
-        parplt.build()
-
-    solution = parplt.srfit(complexity=5)
-    print(solution['equation'])
-
-    parplt.show()
+    fprplt.build()
+    fprplt.show()
 
     def case1(): 
-        parplt.x = params.q_des_o
-        parplt.y = params.T_des_i
-        parplt.z = params.efficiency
-        parplt.c = params.T_des_o
+        fprplt.x = params.q_des_o
+        fprplt.y = params.T_des_i
+        fprplt.z = params.efficiency
+        fprplt.c = params.T_des_o
 
-        parplt.legend = False 
-        parplt.plot3d = True
-        parplt.scatter = True
-        parplt.colorbar = False
-        parplt.grayscale = False 
-        parplt.linelabels = False 
+        fprplt.legend = False 
+        fprplt.plot3d = True
+        fprplt.scatter = True
+        fprplt.colorbar = False
+        fprplt.grayscale = False 
+        fprplt.linelabels = False 
 
-        for val in parplt.data_full_set[params.T_des_o.key].unique():
+        for val in fprplt.data_full_set[params.T_des_o.key].unique():
 
-            for par in parplt.data_full_set[params.T_des_i.key].unique(): 
+            for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
 
-                if par == parplt.data_full_set[params.T_des_i.key].unique()[-1] and val == parplt.data_full_set[params.T_des_o.key].unique()[-1]: 
-                    parplt.colorbar = True
+                if par == fprplt.data_full_set[params.T_des_i.key].unique()[-1] and val == fprplt.data_full_set[params.T_des_o.key].unique()[-1]: 
+                    fprplt.colorbar = True
 
                 if val > par: 
-                    parplt.filter(
+                    fprplt.filter(
                         (params.T_des_o, lambda x: x == val), 
                         (params.T_des_i, lambda x: x == par),
                         (params.q_des_o, (max, params.efficiency)) 
                     ) 
 
-                    parplt.build()
+                    fprplt.build()
         
-        parplt.show()
+        fprplt.show()
+    def case2(): 
+        fprplt.x = params.T_des_o
+        fprplt.y = params.T_des_i
+        fprplt.z = params.efficiency
+
+        fprplt.legend = False 
+        fprplt.plot3d = True
+        fprplt.scatter = True
+        fprplt.colorbar = False
+        fprplt.grayscale = False 
+        fprplt.linelabels = False 
+
+        for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
+
+            fprplt.filter(
+                (params.T_des_i, lambda x: x == par),
+                (params.q_des_o, lambda x: x == 200), 
+                (params.T_des_o, (max, params.efficiency)) 
+            ) 
+
+            fprplt.build()
+
+        solution = fprplt.srfit(complexity=6)
+        print(solution['equation'])
+
+        fprplt.show()
+    def case3(): 
+        def funct(df, To, Ti): 
+            return np.cos((np.log(df[To.key]) - (df[Ti.key] * 0.28989363)) / df[To.key]) - 0.24336664
+
+        fprplt.newparam(
+            params, 'eta_prime', 'Predicted Performance', '[-]', funct, [params.T_des_o, params.T_des_i] 
+        )
+
+        fprplt.x = params.q_des_o
+        fprplt.y = params.eta_prime
+        fprplt.z = params.efficiency
+
+        fprplt.legend = False 
+        fprplt.plot3d = True
+        fprplt.scatter = True
+        fprplt.colorbar = False
+        fprplt.grayscale = False 
+        fprplt.linelabels = False 
+
+        for val in fprplt.data_full_set[params.T_des_i.key].unique(): 
+
+            fprplt.filter(
+                (params.T_des_i, lambda x: x == val),
+                (params.q_des_o, (max, params.efficiency)) 
+            ) 
+
+            fprplt.build()
+
+        solution = fprplt.srfit(complexity='best')
+        print(solution['equation'])
+
+        fprplt.show()
+
 
