@@ -525,6 +525,115 @@ class FPlotR():
         if self.legend and not self.barplot: 
             plt.legend()
 
+    def srfit(self, complexity: int=-1, niters: int=40, display: bool=True): 
+        '''
+        Loads all built data and constructs equations for best fit 
+        according to the data.
+
+        ### Parameters
+        ---
+        title : str=''
+            (optional) Defines the displayed title of the visual. 
+        '''
+
+        from pysr import PySRRegressor
+        from sympy import lambdify
+
+        points = []
+
+        # Check for unexpected lines
+        if len(self.ax.lines) > 0:
+            raise RuntimeError("Unexpected lines found on the Axes — only scatter plots (collections) are supported.")
+
+        # Extract points from collections
+        if isinstance(self.ax, Axes3D):
+            for col in self.ax.collections:
+                if hasattr(col, '_offsets3d'):
+                    x, y, z = col._offsets3d
+                    for xi, yi, zi in zip(x, y, z):
+                        points.append((xi, yi, zi))
+            features = [self.x.key, self.y.key]    
+
+        else: # if the plot is not in 3D
+            for col in self.ax.collections:
+                offsets = col.get_offsets()
+                for offset in offsets:
+                    xi, yi = offset
+                    points.append((xi, yi))
+            features = [self.x.key]    
+
+        points = np.array(points)
+        X = points[:, :-1]
+        Y = points[:,  -1]
+
+        # Example: fitting to sample data
+        model = PySRRegressor(
+            model_selection="best",     # Pick best model balancing simplicity & accuracy
+            niterations=niters,         # Number of evolutionary steps
+            binary_operators=["+", "-", "*", "/"],
+            unary_operators=["sqrt", "log", "exp", "sin", "cos"],
+            extra_sympy_mappings={"square": lambda x: x**2},
+            verbosity=1,
+            feature_names=features, 
+            select_k_features=3 
+        )
+
+        model.fit(X, Y)
+
+        if display and isinstance(self.ax, Axes3D): 
+            x = points[:, 0]
+            y = points[:, 1]
+            z = points[:, 2]
+
+            # Prepare meshgrid for plotting surface
+            x_lin = np.linspace(x.min(), x.max(), 100)
+            y_lin = np.linspace(y.min(), y.max(), 100)
+            x_grid, y_grid = np.meshgrid(x_lin, y_lin)
+            xymesh = np.column_stack([x_grid.ravel(), y_grid.ravel()])
+
+            # Predict using specified equation
+            if complexity == 'best': 
+                z_prediction = model.predict(xymesh).reshape(x_grid.shape)
+            else: # getting specific solution based on complexity
+                vars = model.feature_names_in_ 
+                if complexity > len(model.equations_): 
+                    complexity == len(model.equations_)
+                cell = model.equations_.iloc[complexity]
+                expr = cell["sympy_format"]
+                f = lambdify(vars, expr, modules="numpy")
+                z_prediction = f(*xymesh.T).reshape(x_grid.shape)
+
+            # Plot surface from symbolic regression
+            self.ax.plot_surface(x_grid, y_grid, z_prediction, color='red', alpha=0.5, label='Best Fit')
+
+        elif display: 
+            x = points[:, 0]
+            y = points[:, 1]
+
+            # Prepare linearly spaced x values for prediction
+            x_lin = np.linspace(x.min(), x.max(), 500).reshape(-1, 1)
+
+            # Predict using specified equation
+            if complexity == 'best':
+                y_prediction = model.predict(x_lin)
+            else:
+                vars = model.feature_names_in_
+                if complexity >= len(model.equations_):
+                    complexity = len(model.equations_) - 1
+                cell = model.equations_.iloc[complexity]
+                expr = cell["sympy_format"]
+                f = lambdify(vars, expr, modules="numpy")
+                y_prediction = f(x_lin.T[0])  # x_lin is 2D; convert to 1D
+
+            # Plot regression line
+            self.ax.plot(x_lin, y_prediction, color='red', alpha=0.5, label='Best Fit')
+
+        if complexity == 'best': 
+            equation = model.get_best()
+        else: equation = model.equations_.iloc[complexity]
+
+        return equation
+
     def reset(self): 
         '''
         Clears the current figure, axis, and plot options. 
@@ -580,9 +689,16 @@ class FPlotR():
         self.ax.grid(True)
 
     def _build_base_3d(self): 
-        self.fig.clf()
-        self.fig.set_size_inches(7, 5)
-        self.ax = self.fig.add_subplot(111, projection='3d')
+
+        # checking if the figure is already in 3D
+        for ax in self.fig.axes:
+            if isinstance(ax, Axes3D):
+                self.ax = ax
+                break
+        else: # if not in 3D, creating a 3D projection
+            self.fig.clf()
+            self.fig.set_size_inches(7, 5)            
+            self.ax = self.fig.add_subplot(111, projection='3d')
 
         if self.baseline: 
 
@@ -721,9 +837,10 @@ class FPlotR():
             else: self.ax.scatter(subset[self.x.key], subset[self.y.key], color=colors[i], zorder=2)
         if self.linelabels and not self.grayscale: labelLines(self.ax.get_lines(), align=True, zorder=2.5, fontsize=6)
 
-        norm = mcolors.Normalize(vmin=min(contours), vmax=max(contours))
-        cbar = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=self.ax)
-        cbar.set_label(f"{self.z.repr} {self.z.units}")
+        if self.colorbar: 
+            norm = mcolors.Normalize(vmin=min(contours), vmax=max(contours))
+            cbar = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=self.ax)
+            cbar.set_label(f"{self.z.repr} {self.z.units}")
 
     def _build_xyzc(self): 
         self._getdata(self.x, self.y, self.z, self.c)
@@ -812,7 +929,7 @@ class FPlotR():
         except: pass
 
         ## HOT FIX - CBAR NOT WORKING WITH tri surface plot
-        if self.scatter: 
+        if self.scatter and self.colorbar: 
             norm = mcolors.Normalize(vmin=min(self.data[self.c.key]), vmax=max(self.data[self.c.key]))
             cbar = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=self.ax, shrink=0.8, pad=0.12)
             cbar.set_label(f"{self.c.repr} {self.c.units}", fontsize=self._fontsize, labelpad=10)
@@ -847,6 +964,7 @@ class FPlotR():
         self.legend = False
         self.plot3d = False
         self.barplot = False
+        self.colorbar = False
 
         # the figure and axis is created here so they get reset after .show()
         self.fig, self.ax = plt.subplots(figsize=(5.5, 4), dpi=100)
@@ -912,7 +1030,7 @@ class FPlotR():
 
 if __name__=='__main__': 
 
-    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', 'solutions.csv')
+    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-05-05_solutions.csv')
 
     params = Parameters()
     losses = [params.q_advective, params.q_reflective, params.q_conductive, params.q_radiative]
@@ -925,23 +1043,64 @@ if __name__=='__main__':
             sum([parplt.data_full_set[params.q_des_o.key][0]] + [parplt.data_full_set[x.key][0] for x in losses])
         )
 
-    parplt.x = params.H_rec
-    parplt.y = params.efficiency
-    # parplt.z = params.efficiency
+    parplt.newparam(
+        params, 'dT', 'Receiver Temperature Change', '[C]', '-', [params.T_des_o, params.T_des_i] 
+    )
+
+    parplt.x = params.T_des_o
+    parplt.y = params.T_des_i
+    parplt.z = params.efficiency
 
     parplt.legend = False 
-    parplt.plot3d = False
-    parplt.scatter = False
+    parplt.plot3d = True
+    parplt.scatter = True
+    parplt.colorbar = False
     parplt.grayscale = False 
     parplt.linelabels = False 
 
-    parplt.filter(
-        # (params.T_des_i, lambda x: x == 700), 
-        # (params.T_des_o, lambda x: x == 800), 
-        (params.H_ratio, lambda x: x > 0.3), 
-        (params.H_ratio, (max, params.efficiency)) 
-    ) 
+    for par in parplt.data_full_set[params.T_des_i.key].unique(): 
 
-    parplt.build()
+        parplt.filter(
+            (params.T_des_i, lambda x: x == par),
+            (params.q_des_o, lambda x: x == 200), 
+            (params.T_des_o, (max, params.efficiency)) 
+        ) 
+
+        parplt.build()
+
+    solution = parplt.srfit(complexity=5)
+    print(solution['equation'])
+
     parplt.show()
+
+    def case1(): 
+        parplt.x = params.q_des_o
+        parplt.y = params.T_des_i
+        parplt.z = params.efficiency
+        parplt.c = params.T_des_o
+
+        parplt.legend = False 
+        parplt.plot3d = True
+        parplt.scatter = True
+        parplt.colorbar = False
+        parplt.grayscale = False 
+        parplt.linelabels = False 
+
+        for val in parplt.data_full_set[params.T_des_o.key].unique():
+
+            for par in parplt.data_full_set[params.T_des_i.key].unique(): 
+
+                if par == parplt.data_full_set[params.T_des_i.key].unique()[-1] and val == parplt.data_full_set[params.T_des_o.key].unique()[-1]: 
+                    parplt.colorbar = True
+
+                if val > par: 
+                    parplt.filter(
+                        (params.T_des_o, lambda x: x == val), 
+                        (params.T_des_i, lambda x: x == par),
+                        (params.q_des_o, (max, params.efficiency)) 
+                    ) 
+
+                    parplt.build()
+        
+        parplt.show()
 

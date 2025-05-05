@@ -751,48 +751,55 @@ def savesolution(study, results, new, path: str=os.path.join(os.getcwd(), 'FPR M
 
 if __name__=='__main__': 
 
-    # studies = designParams(
-    #     T_des_i=600, 
-    #     T_des_o=900, 
-    #     q_des_o=300, 
-    #     W_ratio=1.5,    # Optimizer wants to make these as large as possible 
-    #     H_ratio=1.5,    # in order to minimize losses. Fixing at 1.5. 
-    #     D_ratio=0.2
-    # )
+    studies = designParams(
+        T_des_i=np.arange(550, 1051, 50), 
+        T_des_o=np.arange(550, 1051, 50), 
+        q_des_o=np.arange(200,  601, 50), 
+        W_ratio=1.5, # optimized 
+        H_ratio=1.5, # optimized 
+        D_ratio=0.2  # static (doesn't matter) 
+    )
 
-    # guesses = [(H) for H in np.linspace(3.0, 15.0, 5)]
+    guesses = [
+        (s, r) for i, (s, r) in enumerate(
+            [ (s, r) 
+                for s in np.linspace(3, 15, 3) # [m*1e-2] Receiver Size guesses
+                for r in np.linspace(0.2, 1.5, 3) # [m*1e-1] Receiver Aspect Ratio guesses
+            ]
+        )
+    ]
 
-    # multiprocesing(studies, guesses, cores=6)
+    multiprocesing(studies, guesses, cores=6)
 
     #----------------------------------------------#
     #--------- single-core simplification ---------#
     #----------------------------------------------#
 
-    study = designParams(
-        T_des_i=600, 
-        T_des_o=900, 
-        q_des_o=300, 
-        W_ratio=1.0, 
-        H_ratio=1.2, 
-        D_ratio=0.2
-    )
+    # study = designParams(
+    #     T_des_i=600, 
+    #     T_des_o=900, 
+    #     q_des_o=300, 
+    #     W_ratio=1.0, 
+    #     H_ratio=1.2, 
+    #     D_ratio=0.2
+    # )
 
-    guess = 15
+    # guess = 15
     
-    new = True
-    receiver = Receiver()
-    for i in np.linspace(3.0, 12.0, 20):        # sizes
-        for j in np.linspace(0.2, 1.8, 20):     # ratios
-            # study.H_ratio = j 
-            solution = receiver.optimize(study, (i, j))
+    # new = True
+    # receiver = Receiver()
+    # for i in np.linspace(3.0, 12.0, 20):        # sizes
+    #     for j in np.linspace(0.2, 1.8, 20):     # ratios
+    #         # study.H_ratio = j 
+    #         solution = receiver.optimize(study, (i, j))
             
-            print(f'Solution converged: ({study.H_rec:5.2f}, {study.H_ratio:4.2f}) -> {100*solution.eta:5.2f}%\n')
-            savesolution(study, solution, new, file='temp.csv')
-            new = False
+    #         print(f'Solution converged: ({study.H_rec:5.2f}, {study.H_ratio:4.2f}) -> {100*solution.eta:5.2f}%\n')
+    #         savesolution(study, solution, new, file='temp.csv')
+    #         new = False
 
-    #------------------------------------------#
-    #--------- might want these later ---------#
-    #------------------------------------------#
+    #----------------------------------------------#
+    #----------- might want this later ------------#
+    #----------------------------------------------#
 
     # guesses = [
     #     (H, r, R) for i, (H, r, R) in enumerate(

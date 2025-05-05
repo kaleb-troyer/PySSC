@@ -234,7 +234,7 @@ class Parameters():
         self.mc_rho_in                      = Struct(key = "mc_rho_in",                        dtype = "float64", repr = "Compressor Inlet Density",                                         units = r"[kg/m3]",      )
         self.mc_ideal_spec_work             = Struct(key = "mc_ideal_spec_work",               dtype = "float64", repr = "Compressor Ideal Spec Work",                                       units = r"[kJ/kg]",      )
         self.mc_phi_des                     = Struct(key = "mc_phi_des",                       dtype = "float64", repr = "Compressor design flow coefficient",                               units = r"[-]",          )
-        self.mc_psi_d                       = Struct(key = "mc_psi_des",                       dtype = "float64", repr =  "Compressor design ideal head coefficient",                        units = r"[-]",          )
+        self.mc_psi_d                       = Struct(key = "mc_psi_des",                       dtype = "float64", repr = "Compressor design ideal head coefficient",                         units = r"[-]",          )
         self.mc_tip_ratio_des               = Struct(key = "mc_tip_ratio_des",                 dtype = "object",  repr = "Compressor design stage tip speed ratio",                          units = r"[-]",          )
         self.mc_n_stages                    = Struct(key = "mc_n_stages",                      dtype = "float64", repr = "Compressor stages",                                                units = r"[-]",          )
         self.mc_N_des                       = Struct(key = "mc_N_des",                         dtype = "float64", repr = "Compressor design shaft speed",                                    units = r"[rpm]",        )
@@ -1139,9 +1139,18 @@ if __name__=='__main__':
     samplt = SAMplot(source, dtypes=dtypes)
     samplt.normalize(params, params.levelized_cost_of_energy, 65.50304439)
 
-    samplt.x = params.PHX_cost_basis
-    samplt.y = params.m_dot_htf_des
-    samplt.z = params.PHX_hot_in
+    # samplt.x = params.PHX_cost_basis
+    # samplt.y = params.m_dot_htf_des
+    # samplt.z = params.PHX_hot_in
+
+    samplt.build()
+
+    print(f"{params.T_turb_in.repr:.<50}{samplt.data[params.T_turb_in.key]:.>8.2f} {params.T_turb_in.units}")
+    print(f"{params.T_co2_PHX_in.repr:.<50}{samplt.data[params.T_co2_PHX_in.key]:.>8.2f} {params.T_co2_PHX_in.units}")
+    print(f"{'HTF Inlet Temperature (PHX Inlet)':.<50}{samplt.data[params.T_htf_cold_des.key]+samplt.data[params.deltaT_HTF_PHX.key]:.>8.2f} {params.T_htf_cold_des.units}")
+    print(f"{params.T_htf_cold_des.repr:.<50}{samplt.data[params.T_htf_cold_des.key]:.>8.2f} {params.T_htf_cold_des.units}")
+    quit()
+
 
     samplt.legend = False
     samplt.plot3d = False
@@ -1261,8 +1270,6 @@ if __name__=='__main__':
         samplt.show()
 
     phx_design_space()
-
-    # samplt.save(name='PIT-LCOE-dTh')
 
     # samplt.baseline = (100, 65.1954)
     # ---
