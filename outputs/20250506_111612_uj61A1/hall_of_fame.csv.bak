@@ -1,0 +1,13 @@
+Complexity,Loss,Equation
+1,5.4240332e-5,"0.7320753"
+5,2.5129151e-5,"(norm_T_des_i_K * -0.013354854) - -0.7749456"
+7,2.9132427e-6,"(norm_T_des_i_K * (-0.07629995 / norm_T_des_o_K)) - -0.7956659"
+8,2.4004091e-6,"cos((norm_T_des_i_K * 0.30805063) / norm_T_des_o_K) + -0.23474261"
+9,2.356784e-6,"sin(cos((norm_T_des_i_K / norm_T_des_o_K) * 0.40428042)) + -0.07724002"
+10,4.7475368e-7,"cos(((norm_T_des_i_K - 0.5766511) * 0.35274228) / norm_T_des_o_K) + -0.23860097"
+13,3.6213424e-7,"cos(((sqrt(norm_T_des_o_K - 0.99967897) - norm_T_des_i_K) * 0.4647197) / norm_T_des_o_K) + -0.25026485"
+14,3.2408454e-7,"cos(((sqrt(log(norm_T_des_o_K - 0.4881476)) - norm_T_des_i_K) * 0.39408582) / norm_T_des_o_K) + -0.24411094"
+15,2.7408592e-7,"cos((0.38765672 / norm_T_des_o_K) * (sqrt(sqrt(sqrt(norm_T_des_o_K - 2.5584683))) - norm_T_des_i_K)) + -0.24336071"
+19,2.0034508e-7,"cos(((sqrt(log(norm_T_des_o_K - (sin(norm_T_des_o_K) - (norm_T_des_o_K - norm_T_des_i_K)))) - norm_T_des_i_K) / norm_T_des_o_K) * 0.39716804) + -0.24726585"
+20,1.7801852e-7,"cos(((sqrt(log(((norm_T_des_o_K - sin(norm_T_des_o_K)) + -0.45865932) / log(norm_T_des_i_K))) - norm_T_des_i_K) / norm_T_des_o_K) * 0.3740615) + -0.24648495"
+24,1.7545918e-7,"cos(((sqrt(log(norm_T_des_o_K - sin((sin(norm_T_des_o_K + -0.06475401) + 0.13094541) - (norm_T_des_o_K - norm_T_des_i_K)))) - norm_T_des_i_K) * 0.4019869) / norm_T_des_o_K) + -0.24597165"
