@@ -121,7 +121,6 @@ class Parameters():
     ```
 
     ### Methods
-    ---
     ```
     get() -> list
         Provides a list of all parameters as Structs.
@@ -1052,7 +1051,7 @@ if __name__=='__main__':
 
     fprplt.build()
     fprplt.show()
-
+    
     def case1(): 
         fprplt.x = params.q_des_o
         fprplt.y = params.T_des_i

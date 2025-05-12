@@ -292,7 +292,7 @@ class Parameters():
         self.t_D                            = Struct(key = "t_D",                              dtype = "float64", repr = "Turbine diameter",                                                 units = r"[m]",          )
         self.t_cost_equipment               = Struct(key = "t_cost_equipment",                 dtype = "float64", repr = "Tubine cost - equipment",                                          units = r"[M$]",         )
         self.t_cost_bare_erected            = Struct(key = "t_cost_bare_erected",              dtype = "float64", repr = "Tubine cost - equipment plus install",                             units = r"[M$]",         )
-        self.recup_total_UA_assigned        = Struct(key = "recup_total_UA_assigned",          dtype = "float64", repr = "Total recuperator UA assigned to design routine",                  units = r"[MW/K]",       )
+        self.recup_total_UA_assigned        = Struct(key = "recup_total_UA_assigned",          dtype = "float64", repr = "Total recuperator UA",                                             units = r"[MW/K]",       )
         self.recup_total_cost_equipment     = Struct(key = "recup_total_cost_equipment",       dtype = "float64", repr = "Total recuperator cost equipment",                                 units = r"[M$]",         )
         self.recup_total_cost_bare_erected  = Struct(key = "recup_total_cost_bare_erected",    dtype = "float64", repr = "Total recuperator cost bare erected",                              units = r"[M$]",         )
         self.recup_LTR_UA_frac              = Struct(key = "recup_LTR_UA_frac",                dtype = "float64", repr = "Fraction of total conductance to LTR",                             units = r"[-]",          )
@@ -1128,53 +1128,39 @@ class SAMplot():
 
 if __name__=='__main__': 
 
-    # source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-02-10_full solution.csv')
-    # source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-02-14_cost basis sensitivity.csv')
-    # source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-02-18_heliostat cost sensitivity.csv')
-    # source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-02-18_receiver eta sensitivity.csv')
-    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-02-28_full solution.csv')
-
+    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-05-12_full solution.csv')
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
     samplt = SAMplot(source, dtypes=dtypes)
-    samplt.normalize(params, params.levelized_cost_of_energy, 65.50304439)
+    samplt.normalize(params, params.levelized_cost_of_energy, 88.8201)
 
-    # samplt.x = params.PHX_cost_basis
-    # samplt.y = params.m_dot_htf_des
-    # samplt.z = params.PHX_hot_in
-
-    samplt.build()
-
-    print(f"{params.T_turb_in.repr:.<50}{samplt.data[params.T_turb_in.key]:.>8.2f} {params.T_turb_in.units}")
-    print(f"{params.T_co2_PHX_in.repr:.<50}{samplt.data[params.T_co2_PHX_in.key]:.>8.2f} {params.T_co2_PHX_in.units}")
-    print(f"{'HTF Inlet Temperature (PHX Inlet)':.<50}{samplt.data[params.T_htf_cold_des.key]+samplt.data[params.deltaT_HTF_PHX.key]:.>8.2f} {params.T_htf_cold_des.units}")
-    print(f"{params.T_htf_cold_des.repr:.<50}{samplt.data[params.T_htf_cold_des.key]:.>8.2f} {params.T_htf_cold_des.units}")
-    quit()
-
+    samplt.x = params.heliostat_cost
+    samplt.y = params.levelized_cost_of_energy_norm
+    samplt.z = params.PHX_hot_in
 
     samplt.legend = False
     samplt.plot3d = False
-    samplt.scatter = True
+    samplt.scatter = False
     samplt.grayscale = False
     samplt.linelabels = False
 
     samplt.filter(
-        (params.try_s_cycle, lambda x: x == 1), 
-        (params.UA_recup_tot, lambda x: x != 30000), 
-        (params.PHX_dT_cold, lambda x: x == 20), 
-        (params.rec_eta_mod, lambda x: x >= 0.99), 
-        # (params.PHX_dT_hot, lambda x: x == 240), 
-        # (params.PHX_hot_in, lambda x: x <= 950), 
-        # (params.PHX_cost_basis, lambda x: x == 100), 
-        # (params.levelized_cost_of_energy, lambda x: x <= 60), 
-        (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+        # --- default filters 
+        (params.try_s_cycle, lambda x: x == 1.00), 
+        (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
+        
+        # --- common filters
+        (params.PHX_cost_basis, lambda x: x >= 210), 
+        (params.heliostat_cost, lambda x: x == 75),
+
+        # --- plot filtering
+        # (params.levelized_cost_of_energy, lambda x: x <= 100), 
     )
     
     samplt.build()
     samplt.show()
-    quit()
 
-    def phx_design_space(): 
+    def case1(): # phx design space 
 
         samplt.x = params.PHX_cost_basis
         samplt.y = params.levelized_cost_of_energy_norm
@@ -1193,6 +1179,7 @@ if __name__=='__main__':
             (params.PHX_dT_hot, lambda x: x == 280), 
             (params.PHX_hot_in, lambda x: x % 20 == 0 and x <= 1100 and x >= 760 and x not in [980]), 
             (params.rec_eta_mod, lambda x: x >= 0.99), 
+            (params.heliostat_cost, lambda x: x == 75),
             (params.PHX_cost_basis, (min, params.levelized_cost_of_energy))
         )
 
@@ -1229,7 +1216,8 @@ if __name__=='__main__':
             (params.UA_recup_tot, lambda x: x != 30000), 
             (params.PHX_dT_cold, lambda x: x == 20), 
             (params.rec_eta_mod, lambda x: x >= 0.99), 
-            (params.levelized_cost_of_energy, lambda x: x <= 70), 
+            (params.levelized_cost_of_energy, lambda x: x <= 100), 
+            (params.heliostat_cost, lambda x: x == 75),
             (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
         )
 
@@ -1268,8 +1256,6 @@ if __name__=='__main__':
         samplt.build(style='--')
         samplt.save(name='PHX Design Space')
         samplt.show()
-
-    phx_design_space()
 
     # samplt.baseline = (100, 65.1954)
     # ---
