@@ -480,11 +480,14 @@ class PyHX():
         self.UA = np.sum(self.nodes_UA)
         return self
 
-    def profile(self): 
+    def profile(self, bounds=()): 
         plt.plot(np.insert(np.cumsum(self.nodes_UA[::-1])/1e6, 0, 0), self.nodes_T_warm[::-1], color='red', label=r'$T_{sand}$')
         plt.plot(np.insert(np.cumsum(self.nodes_UA[::-1])/1e6, 0, 0), self.nodes_T_cold[::-1], color='blue', label=r'$T_{sCO_{2}}$')
         plt.scatter(np.insert(np.cumsum(self.nodes_UA[::-1])/1e6, 0, 0), self.nodes_T_warm[::-1], color='red', zorder=3)
         plt.scatter(np.insert(np.cumsum(self.nodes_UA[::-1])/1e6, 0, 0), self.nodes_T_cold[::-1], color='blue', zorder=3)
+
+        if bounds: 
+            plt.ylim(bounds)
 
         plt.margins(x=0)
         plt.legend()
@@ -866,24 +869,24 @@ if __name__=='__main__':
     th = 0.003 # [m] Warm channel thickness
     tc = 0.006 # [m] Cold channel thickness
 
-    case = 1
+    case = 3
     match case: 
         case 1:
             # basis=~100%
             N = 30
             P = 25e6
-            duty = 210.5e6 
-            warm = (555.14, 940.0)  # [C]
-            cold = (535.14, 700.0)  # [C]
+            duty = 216.17e6 
+            warm = (575.08, 1080.0)  # [C]
+            cold = (555.08,  780.0)  # [C]
             mat = 'SiC'
             geo = 'TO'
         case 2: 
-            # basis=~300%
+            # basis=~225%
             N = 30
             P = 25e6
-            duty = 305.2e6  
-            warm = (581.86, 1010.0)  # [C]
-            cold = (561.86,  730.0)  # [C]
+            duty = 201.74e6  
+            warm = (607.87, 1060.0)  # [C]
+            cold = (587.87,  760.0)  # [C]
             mat = 'SiC'
             geo = 'TO'
         case 3: 
@@ -912,7 +915,7 @@ if __name__=='__main__':
         geo = geo, 
     )
     
-    model.profile()
+    model.profile(bounds=(500, 1100))
     model.display(joinx=True, joiny=True, joinz=False, savefig=False)
 
     print()

@@ -292,7 +292,7 @@ class FPlotR():
         # Optionally, make a copy of the DataFrame to reduce fragmentation
         self.data_full_set = self.data_full_set.copy()
 
-    def newparam(self, params: Parameters=None, name: str='', repr: str='', units: str='[-]', operation: str='+', args: list=[]): 
+    def newparam(self, params: Parameters=None, name: str='', repr: str='', units: str='[-]', operation: 'function'=None, args: list=[]): 
         
         # Creating the parameter
         structure = Struct(
@@ -315,48 +315,7 @@ class FPlotR():
 
                 if callable(operation):
                     new_col_vals = operation(self.data_full_set, *args)
-                else:
-                    operation = operation.lower().strip()
-                    ops = {
-                        # Multiplication
-                        'mul':         lambda x, y: x * y,
-                        'multiply':    lambda x, y: x * y,
-                        'multiplication': lambda x, y: x * y,
-                        '*':           lambda x, y: x * y,
-                        'times':       lambda x, y: x * y,
-                        'product':     lambda x, y: x * y,
-                        'x':           lambda x, y: x * y,
-
-                        # Division
-                        'div':         lambda x, y: x / y,
-                        'divide':      lambda x, y: x / y,
-                        'division':    lambda x, y: x / y,
-                        '/':           lambda x, y: x / y,
-                        'quotient':    lambda x, y: x / y,
-                        'over':        lambda x, y: x / y,
-
-                        # Addition
-                        'add':         lambda x, y: x + y,
-                        'addition':    lambda x, y: x + y,
-                        '+':           lambda x, y: x + y,
-                        'sum':         lambda x, y: x + y,
-                        'plus':        lambda x, y: x + y,
-                        'increase':    lambda x, y: x + y,
-
-                        # Subtraction
-                        'sub':         lambda x, y: x - y,
-                        'subtract':    lambda x, y: x - y,
-                        'subtraction': lambda x, y: x - y,
-                        '-':           lambda x, y: x - y,
-                        'minus':       lambda x, y: x - y,
-                        'difference':  lambda x, y: x - y,
-                        'decrease':    lambda x, y: x - y,
-                    }
-
-                    try:
-                        new_col_vals = ops[operation](new_col_vals, self.data_full_set[param.key])
-                    except KeyError:
-                        raise ValueError(f"Unsupported operation: {operation}")
+                else: raise ValueError(f"Unsupported operation: {operation}")
 
             new_col_vals.name = structure.key
             self.data_full_set = pd.concat([
@@ -364,8 +323,7 @@ class FPlotR():
                 new_col_vals,
             ], axis=1)
 
-        else:
-            print(f"'{structure.key}' already exists in data_full_set.")
+        else: print(f"'{structure.key}' already exists in data_full_set.")
 
         self.data_full_set = self.data_full_set.copy()
 
@@ -1028,17 +986,15 @@ if __name__=='__main__':
     dtypes = {par.key: par.dtype for par in params.get()}
     fprplt = FPlotR(source, dtypes=dtypes)
 
-    fprplt.newparam(
-        params, 'dT', 'Receiver Temperature Change', '[C]', '-', [params.T_des_o, params.T_des_i] 
-    )
+    fprplt.x = params.T_des_o
+    # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
+    fprplt.y = [params.rhoc_avg, params.tauc_avg]
+    # fprplt.z = params.efficiency
 
-    fprplt.x = params.T_des_o_K
-    fprplt.y = params.T_des_i_K
-    fprplt.z = params.efficiency
-
-    fprplt.legend = False 
-    fprplt.plot3d = True
-    fprplt.scatter = True
+    fprplt.legend = True 
+    fprplt.plot3d = False
+    fprplt.barplot = True
+    fprplt.scatter = False
     fprplt.colorbar = False
     fprplt.grayscale = False 
     fprplt.linelabels = False 
@@ -1049,6 +1005,7 @@ if __name__=='__main__':
         (params.T_des_o, (max, params.efficiency)) 
     ) 
 
+    fprplt.ax.set_ylim(bottom=0.26, top=0.3)
     fprplt.build()
     fprplt.show()
     

@@ -42,11 +42,11 @@ class System():
 
     ### Attributes
 
-    path : str=str=os.path.join(os.getcwd(), 'SSC CSP API', 'results')
+    path : str=str=os.path.join(os.getcwd(), 'SSC CSP API', 'results') 
         Path to the folder of the data file.
-    file : str='solutions.csv'
+    file : str='solutions.csv' 
         Name of the csv. If no file exists, then one is created. 
-    newrun : bool=True
+    newrun : bool=True 
         If true, the file is overwritten when the class is created. 
     
     ### Methods
@@ -194,7 +194,7 @@ class System():
         self.studies = combinations(params)
         self.solutions = []
 
-        if cores <= 1: 
+        if cores <= 3: 
             # simple procedure if not multithreading
 
             print("Initializing parametric study...\n")
@@ -207,7 +207,7 @@ class System():
                 self.optimize(savefig=False)
 
             return True
-        elif cores >= 2: 
+        elif cores >= 4: 
             # preparing all jobs and the job manager for multithreading. 
 
             manager = mp.Manager()
@@ -464,7 +464,7 @@ class System():
 if __name__=='__main__': 
 
     print("current processID:", os.getpid(), "\n") 
-
+    
     system = System(newrun=True, file='solutions.csv')
     system.update({
         'try_simple_cycle'     : 1,      # [-]

@@ -16,141 +16,142 @@ import utilities as ut
 from pyfluids import Fluid, FluidsList, Input
 from collections import defaultdict
 
-def capacitanceEval(pres=25e6, 
-                    msand=483.7,
-                    msalt=387.1,
-                    msco2=469.0,
-                    inlet=560.9,
-                    leave=730.0, 
-                    sco2_nodes=[],
-                    sand_nodes=[],
-                    salt_nodes=[],
-                    salt_UA=[],
-                    sand_UA=[]):
+# def capacitanceEval(pres=25e6, 
+    #                 msand=483.7,
+    #                 msalt=387.1,
+    #                 msco2=469.0,
+    #                 inlet=560.9,
+    #                 leave=730.0, 
+    #                 sco2_nodes=[],
+    #                 sand_nodes=[],
+    #                 salt_nodes=[],
+    #                 salt_UA=[],
+    #                 sand_UA=[]):
 
-    #---Fluid Properties
-    fluid = Fluid(FluidsList.CarbonDioxide).with_state(
-        Input.temperature(300), Input.pressure(pres)
-    )
+    # #---Fluid Properties
+    # fluid = Fluid(FluidsList.CarbonDioxide).with_state(
+    #     Input.temperature(300), Input.pressure(pres)
+    # )
 
-    #---Sand vs Salt HTF
-    def salt_cp(T_K):
-        return (1443. + 0.172 * (T_K-273.15))/1000.0
-    def baux_cp(T_K): 
-        return 0.148 * (T_K**0.3093)
-    def salt_rho(T_K):
-        return max(2090.0 - 0.636 * (T_K-273.15), 1000) 
-    def baux_rho(T_K):
-        return 3300 * 0.55
-    def sio2_rho(T_K):
-        frac = 0.61
-        T_C = T_K - 273.15
+    # #---Sand vs Salt HTF
+    # def salt_cp(T_K):
+    #     return (1443. + 0.172 * (T_K-273.15))/1000.0
+    # def baux_cp(T_K): 
+    #     return 0.148 * (T_K**0.3093)
+    # def salt_rho(T_K):
+    #     return max(2090.0 - 0.636 * (T_K-273.15), 1000) 
+    # def baux_rho(T_K):
+    #     return 3300 * 0.55
+    # def sio2_rho(T_K):
+    #     frac = 0.61
+    #     T_C = T_K - 273.15
 
-        if T_C < 573: 
-            rho = frac * 2648
-        elif T_C < 870: 
-            rho = frac * 2530
-        elif T_C < 1470: 
-            rho = frac * 2250
-        elif T_C < 1705: 
-            rho = frac * 2200
+    #     if T_C < 573: 
+    #         rho = frac * 2648
+    #     elif T_C < 870: 
+    #         rho = frac * 2530
+    #     elif T_C < 1470: 
+    #         rho = frac * 2250
+    #     elif T_C < 1705: 
+    #         rho = frac * 2200
 
-        return rho
-    def sio2_cp(T_K): 
-        M = 0.0600843
-        t = T_K / 1000
+    #     return rho
+    # def sio2_cp(T_K): 
+    #     M = 0.0600843
+    #     t = T_K / 1000
 
-        if T_K < 847: 
-            A = -6.076591
-            B =  251.6755
-            C = -324.7964
-            D =  168.5604
-            E =  0.002548
-        else: 
-            A =  58.75340
-            B =  10.27925
-            C = -0.131384
-            D =  0.025210
-            E =  0.025601
+    #     if T_K < 847: 
+    #         A = -6.076591
+    #         B =  251.6755
+    #         C = -324.7964
+    #         D =  168.5604
+    #         E =  0.002548
+    #     else: 
+    #         A =  58.75340
+    #         B =  10.27925
+    #         C = -0.131384
+    #         D =  0.025210
+    #         E =  0.025601
         
-        C1 = A + (B*(t**1)) + (C*(t**2))
-        C2 = (D*(t**3)) + + (E*(t**(-2)))
-        cp = (C1 + C2) / (1000 * M)
-        return cp
+    #     C1 = A + (B*(t**1)) + (C*(t**2))
+    #     C2 = (D*(t**3)) + + (E*(t**(-2)))
+    #     cp = (C1 + C2) / (1000 * M)
+    #     return cp
 
-    range_start = 500
-    range_close = 1000
+    # range_start = 500
+    # range_close = 1000
 
-    temps = []
-    bauxs = []
-    sio2s = []
-    salts = []
-    sco2s = []
-    saltUA = [salt_UA[i]/salt_UA[-1] for i in range(len(salt_UA))]
-    sandUA = [sand_UA[i]/sand_UA[-1] for i in range(len(sand_UA))]
+    # temps = []
+    # bauxs = []
+    # sio2s = []
+    # salts = []
+    # sco2s = []
+    # saltUA = [salt_UA[i]/salt_UA[-1] for i in range(len(salt_UA))]
+    # sandUA = [sand_UA[i]/sand_UA[-1] for i in range(len(sand_UA))]
 
-    for temp in np.arange(range_start, range_close+1, 1 ): 
+    # for temp in np.arange(range_start, range_close+1, 1 ): 
 
-        fluid.update(
-            Input.temperature(temp), Input.pressure(pres)
-        )
+    #     fluid.update(
+    #         Input.temperature(temp), Input.pressure(pres)
+    #     )
 
-        # baux = baux_cp(temp)
-        # salt = salt_cp(temp)
-        # sio2 = sio2_cp(temp)
-        # sco2 = fluid.specific_heat / 1000
-        # name = "Specific Heat Capacity"
-        # dims = "[kJ/kg-K]"
-        # symb = "cp"
+    #     # baux = baux_cp(temp)
+    #     # salt = salt_cp(temp)
+    #     # sio2 = sio2_cp(temp)
+    #     # sco2 = fluid.specific_heat / 1000
+    #     # name = "Specific Heat Capacity"
+    #     # dims = "[kJ/kg-K]"
+    #     # symb = "cp"
 
-        # baux = baux_cp(temp)*sand_rho(temp)
-        # salt = salt_cp(temp)*salt_rho(Ttemp)
-        # sco2 = fluid.specific_heat * fluid.density / 1000
-        # name = "Heat Capacity"
-        # dims = "[kJ/m3-k]"
-        # symb = "Cp"
+    #     # baux = baux_cp(temp)*sand_rho(temp)
+    #     # salt = salt_cp(temp)*salt_rho(Ttemp)
+    #     # sco2 = fluid.specific_heat * fluid.density / 1000
+    #     # name = "Heat Capacity"
+    #     # dims = "[kJ/m3-k]"
+    #     # symb = "Cp"
 
-        baux = baux_cp(temp) * msand
-        salt = salt_cp(temp) * msalt
-        sio2 = sio2_cp(temp) * msand
-        sco2 = (fluid.specific_heat / 1000) * msco2
-        name = "Capacitance Rate"
-        dims = "[kW/k]"
-        symb = "C"
+    #     baux = baux_cp(temp) * msand
+    #     salt = salt_cp(temp) * msalt
+    #     sio2 = sio2_cp(temp) * msand
+    #     sco2 = (fluid.specific_heat / 1000) * msco2
+    #     name = "Capacitance Rate"
+    #     dims = "[kW/k]"
+    #     symb = "C"
 
-        temps.append(temp)
-        salts.append(salt)
-        bauxs.append(baux)
-        sco2s.append(sco2)
-        sio2s.append(sio2)
+    #     temps.append(temp)
+    #     salts.append(salt)
+    #     bauxs.append(baux)
+    #     sco2s.append(sco2)
+    #     sio2s.append(sio2)
 
-    plt.subplot(1, 1, 1)
-    plt.axvline(x=inlet, color="black", linestyle="--", linewidth=0.75)
-    plt.axvline(x=leave, color="black", linestyle="--", linewidth=0.75)
-    plt.plot(temps, salts, label="Solar Salt")
-    plt.plot(temps, bauxs, label="Bauxite")
-    plt.plot(temps, sco2s, label="sCO2 (25MPa)")
-    plt.plot(temps, sio2s, label="Silica")
-    plt.legend()
-    plt.xlabel("Temperature [K]")
-    plt.ylabel(name + " " + dims)
-    plt.margins(0)
-    plt.grid(True)
-    plt.title("HTF" + " " + name)
-
-    # plt.subplot(1, 2, 2)
-    # plt.plot(range(0, len(salt_nodes)), salt_nodes, label="Salt")
-    # plt.plot(range(0, len(sand_nodes)), sand_nodes, label="Sand", linestyle="--")
-    # plt.plot(range(0, len(sco2_nodes)), sco2_nodes, label="sCO2")
+    # plt.subplot(1, 1, 1)
+    # plt.axvline(x=inlet, color="black", linestyle="--", linewidth=0.75)
+    # plt.axvline(x=leave, color="black", linestyle="--", linewidth=0.75)
+    # plt.plot(temps, salts, label="Solar Salt")
+    # plt.plot(temps, bauxs, label="Bauxite")
+    # plt.plot(temps, sco2s, label="sCO2 (25MPa)")
+    # plt.plot(temps, sio2s, label="Silica")
     # plt.legend()
-    # plt.ylabel("Temperature [K]")
-    # plt.xlabel("PHX Node")
+    # plt.xlabel("Temperature [K]")
+    # plt.ylabel(name + " " + dims)
     # plt.margins(0)
     # plt.grid(True)
-    # plt.title("HTF Subdivision Temperatures")
+    # plt.title("HTF" + " " + name)
 
-    plt.tight_layout()
-    plt.show()
+    # # plt.subplot(1, 2, 2)
+    # # plt.plot(range(0, len(salt_nodes)), salt_nodes, label="Salt")
+    # # plt.plot(range(0, len(sand_nodes)), sand_nodes, label="Sand", linestyle="--")
+    # # plt.plot(range(0, len(sco2_nodes)), sco2_nodes, label="sCO2")
+    # # plt.legend()
+    # # plt.ylabel("Temperature [K]")
+    # # plt.xlabel("PHX Node")
+    # # plt.margins(0)
+    # # plt.grid(True)
+    # # plt.title("HTF Subdivision Temperatures")
+
+    # plt.tight_layout()
+    # plt.show()
+
 def get_sco2_design_parameters():
 
     des_par = {}

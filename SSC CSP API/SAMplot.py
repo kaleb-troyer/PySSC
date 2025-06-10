@@ -148,7 +148,7 @@ class Parameters():
         self.opt_objective  = Struct(key = "des_objective",         dtype = "int64",    repr = "optimization objective",                         units = "[-]"          )
         self.opt_tolerance  = Struct(key = "rel_tol",               dtype = "float64",  repr = "optimization tolerance exponent",                units = "[-]"          )
         self.htf_code       = Struct(key = "htf",                   dtype = "int64",    repr = "Heat Transfer Fluid",                            units = "[-]"          )
-        self.PHX_hot_in     = Struct(key = "T_htf_hot_des",         dtype = "float64",  repr = "PHX Hot Inlet Temperature",                      units = "[C]"          )
+        self.PHX_hot_in     = Struct(key = "T_htf_hot_des",         dtype = "float64",  repr = "PHX Hot Inlet Temperature",                      units = "[C]",          acro = r"$T_{hot,in}$")
         self.ambient_temp   = Struct(key = "T_amb_des",             dtype = "float64",  repr = "Ambient Design Temperature",                     units = "[C]"          )
         self.dT_mc_approach = Struct(key = "dT_mc_approach",        dtype = "float64",  repr = "Compressor Approach Temperature",                units = "[C]"          )
         self.site_elevation = Struct(key = "site_elevation",        dtype = "float64",  repr = "Site Elevation",                                 units = "[m]"          )
@@ -201,30 +201,30 @@ class Parameters():
         self.total_cost                     = Struct(key = "total_cost",                       dtype = "float64", repr = "Total cost of CSP and power cycle",                                units = r"[M$]",         )
         self.total_spec_cost                = Struct(key = "total_spec_cost",                  dtype = "float64", repr = "Total specific cost bare erected",                                 units = r"[M$/kWe]",     )
         self.total_spec_cost_thermal        = Struct(key = "total_spec_cost_thermal",          dtype = "float64", repr = "Total specific (thermal) cost bare erected",                       units = r"[M$/kWt]",     )
-        self.solar_tower_cost               = Struct(key = "solar_tower_cost",                 dtype = "float64", repr = "CSP Gen3 Solar Tower capital cost",                                units = r"[M$]",       acro = r"Solar Tower"       )
-        self.solar_field_cost               = Struct(key = "solar_field_cost",                 dtype = "float64", repr = "CSP Gen3 Solar Field capital cost",                                units = r"[M$]",       acro = r"Solar Field"       )
-        self.receiver_cost                  = Struct(key = "falling_particle_receiver",        dtype = "float64", repr = "CSP Gen3 Falling Particle Receiver capital cost",                  units = r"[M$]",       acro = r"Receiver"          )
-        self.particles_cost                 = Struct(key = "particles_cost",                   dtype = "float64", repr = "bulk cost of particles",                                           units = r"[M$]",       acro = r"Particles"         )
-        self.particle_losses_cost           = Struct(key = "particle_losses_cost",             dtype = "float64", repr = "incurred cost due to particle loss / attrition",                   units = r"[M$]",       acro = r"Attrition"         )
-        self.particle_storage_cost          = Struct(key = "particle_storage_cost",            dtype = "float64", repr = "particle storage bins and insulation capital cost",                units = r"[M$]",       acro = r"TES"               )
-        self.particle_lifts_cost            = Struct(key = "particle_lifts_cost",              dtype = "float64", repr = "particle transportation capital cost",                             units = r"[M$]",       acro = r"Lifts"             )
-        self.land_cost                      = Struct(key = "land_cost",                        dtype = "float64", repr = "bulk cost of land required for power plant",                       units = r"[M$]",       acro = r"Land"              )
-        self.HTR_capital_cost               = Struct(key = "HTR_capital_cost",                 dtype = "float64", repr = "high temperature recuperator capital cost",                        units = r"[M$]",       acro = r"HTR"               )
-        self.LTR_capital_cost               = Struct(key = "LTR_capital_cost",                 dtype = "float64", repr = "low temperature recuperator capital cost",                         units = r"[M$]",       acro = r"LTR"               )
-        self.PHX_capital_cost               = Struct(key = "PHX_capital_cost",                 dtype = "float64", repr = "primary heat exchanger capital cost",                              units = r"[M$]",       acro = r"PHX"               )
-        self.air_cooler_capital_cost        = Struct(key = "air_cooler_capital_cost",          dtype = "float64", repr = "air cooler capital cost",                                          units = r"[M$]",       acro = r"Air Cooler"        )
-        self.compressor_capital_cost        = Struct(key = "compressor_capital_cost",          dtype = "float64", repr = "primary compressor capital cost",                                  units = r"[M$]",       acro = r"Compressor"        )
-        self.recompressor_capital_cost      = Struct(key = "recompressor_capital_cost",        dtype = "float64", repr = "recompressor capital cost",                                        units = r"[M$]",       acro = r"Recompressor"      )
-        self.turbine_capital_cost           = Struct(key = "turbine_capital_cost",             dtype = "float64", repr = "turbine capital cost",                                             units = r"[M$]",       acro = r"Turbine"           )
-        self.piping_capital_cost            = Struct(key = "piping_capital_cost",              dtype = "float64", repr = "piping, inventory control, etc.",                                  units = r"[M$]",       acro = r"Piping, etc."      )
-        self.piping_cost_factor             = Struct(key = "piping_cost_factor",               dtype = "float64", repr = "% of cycle capital constituting pipe costs",                       units = r"[M$]",       acro = r"Piping Fraction"   )
-        self.balance_of_plant_cost          = Struct(key = "balance_of_plant_cost",            dtype = "float64", repr = "transformers, inverters, controls, etc.",                          units = r"[M$]",       acro = r"BOP"               )
-        self.cycle_capital_cost             = Struct(key = "cycle_capital_cost",               dtype = "float64", repr = "Power block capital costs",                                        units = r"[M$]",       acro = r"Power Block"       )
-        self.plant_capital_cost             = Struct(key = "plant_capital_cost",               dtype = "float64", repr = "CSP equipment capital costs",                                      units = r"[M$]",       acro = r"CSP Components"    )
-        self.total_capital_cost             = Struct(key = "total_capital_cost",               dtype = "float64", repr = "total expected capital cost of plant",                             units = r"[M$]",       acro = r"Total"             )
-        self.annual_maintenance_cost        = Struct(key = "annual_maintenance_cost",          dtype = "float64", repr = "expected O&M annual costs",                                        units = r"[M$/year]",  acro = r"O&M"               )
-        self.total_adjusted_cost            = Struct(key = "total_adjusted_cost",              dtype = "float64", repr = "Total Adjusted Cost",                                              units = r"[M$]",       acro = r"Total Adj."        )
-        self.levelized_cost_of_energy       = Struct(key = "levelized_cost_of_energy",         dtype = "float64", repr = "Levelized Cost of Energy",                                         units = r"[$/MWe-h]",  acro = r"LCOE"              )
+        self.solar_tower_cost               = Struct(key = "solar_tower_cost",                 dtype = "float64", repr = "CSP Gen3 Solar Tower capital cost",                                units = r"[M$]",       acro = r"$Solar Tower$"       )
+        self.solar_field_cost               = Struct(key = "solar_field_cost",                 dtype = "float64", repr = "CSP Gen3 Solar Field capital cost",                                units = r"[M$]",       acro = r"$Solar Field$"       )
+        self.receiver_cost                  = Struct(key = "falling_particle_receiver",        dtype = "float64", repr = "CSP Gen3 Falling Particle Receiver capital cost",                  units = r"[M$]",       acro = r"$Receiver$"          )
+        self.particles_cost                 = Struct(key = "particles_cost",                   dtype = "float64", repr = "bulk cost of particles",                                           units = r"[M$]",       acro = r"$Particles$"         )
+        self.particle_losses_cost           = Struct(key = "particle_losses_cost",             dtype = "float64", repr = "incurred cost due to particle loss / attrition",                   units = r"[M$]",       acro = r"$Attrition$"         )
+        self.particle_storage_cost          = Struct(key = "particle_storage_cost",            dtype = "float64", repr = "particle storage bins and insulation capital cost",                units = r"[M$]",       acro = r"$TES$"               )
+        self.particle_lifts_cost            = Struct(key = "particle_lifts_cost",              dtype = "float64", repr = "particle transportation capital cost",                             units = r"[M$]",       acro = r"$Lifts$"             )
+        self.land_cost                      = Struct(key = "land_cost",                        dtype = "float64", repr = "bulk cost of land required for power plant",                       units = r"[M$]",       acro = r"$Land$"              )
+        self.HTR_capital_cost               = Struct(key = "HTR_capital_cost",                 dtype = "float64", repr = "high temperature recuperator capital cost",                        units = r"[M$]",       acro = r"$HTR$"               )
+        self.LTR_capital_cost               = Struct(key = "LTR_capital_cost",                 dtype = "float64", repr = "low temperature recuperator capital cost",                         units = r"[M$]",       acro = r"$LTR$"               )
+        self.PHX_capital_cost               = Struct(key = "PHX_capital_cost",                 dtype = "float64", repr = "primary heat exchanger capital cost",                              units = r"[M$]",       acro = r"$PHX$"               )
+        self.air_cooler_capital_cost        = Struct(key = "air_cooler_capital_cost",          dtype = "float64", repr = "air cooler capital cost",                                          units = r"[M$]",       acro = r"$Air Cooler$"        )
+        self.compressor_capital_cost        = Struct(key = "compressor_capital_cost",          dtype = "float64", repr = "primary compressor capital cost",                                  units = r"[M$]",       acro = r"$Compressor$"        )
+        self.recompressor_capital_cost      = Struct(key = "recompressor_capital_cost",        dtype = "float64", repr = "recompressor capital cost",                                        units = r"[M$]",       acro = r"$Recompressor$"      )
+        self.turbine_capital_cost           = Struct(key = "turbine_capital_cost",             dtype = "float64", repr = "turbine capital cost",                                             units = r"[M$]",       acro = r"$Turbine$"           )
+        self.piping_capital_cost            = Struct(key = "piping_capital_cost",              dtype = "float64", repr = "piping, inventory control, etc.",                                  units = r"[M$]",       acro = r"$Piping, etc$."      )
+        self.piping_cost_factor             = Struct(key = "piping_cost_factor",               dtype = "float64", repr = "% of cycle capital constituting pipe costs",                       units = r"[M$]",       acro = r"$Piping Fraction$"   )
+        self.balance_of_plant_cost          = Struct(key = "balance_of_plant_cost",            dtype = "float64", repr = "transformers, inverters, controls, etc.",                          units = r"[M$]",       acro = r"$BOP$"               )
+        self.cycle_capital_cost             = Struct(key = "cycle_capital_cost",               dtype = "float64", repr = "Power block capital costs",                                        units = r"[M$]",       acro = r"$Power Block$"       )
+        self.plant_capital_cost             = Struct(key = "plant_capital_cost",               dtype = "float64", repr = "CSP equipment capital costs",                                      units = r"[M$]",       acro = r"$CSP Components$"    )
+        self.total_capital_cost             = Struct(key = "total_capital_cost",               dtype = "float64", repr = "total expected capital cost of plant",                             units = r"[M$]",       acro = r"$Total$"             )
+        self.annual_maintenance_cost        = Struct(key = "annual_maintenance_cost",          dtype = "float64", repr = "expected O&M annual costs",                                        units = r"[M$/year]",  acro = r"$O&M$"               )
+        self.total_adjusted_cost            = Struct(key = "total_adjusted_cost",              dtype = "float64", repr = "Total Adjusted Cost",                                              units = r"[M$]",       acro = r"$Total Adj$."        )
+        self.levelized_cost_of_energy       = Struct(key = "levelized_cost_of_energy",         dtype = "float64", repr = "Levelized Cost of Energy",                                         units = r"[$/MWe-h]",  acro = r"$LCOE$"              )
         self.T_comp_in                      = Struct(key = "T_comp_in",                        dtype = "float64", repr = "Compressor Inlet Temperature",                                     units = r"[C]",          )
         self.P_comp_in                      = Struct(key = "P_comp_in",                        dtype = "float64", repr = "Compressor Inlet Pressure",                                        units = r"[MPa]",        )
         self.P_comp_out                     = Struct(key = "P_comp_out",                       dtype = "float64", repr = "Compressor Outlet Pressure",                                       units = r"[MPa]",        )
@@ -513,6 +513,41 @@ class SAMplot():
         # Optionally, make a copy of the DataFrame to reduce fragmentation
         self.data_full_set = self.data_full_set.copy()
 
+    def newparam(self, params: Parameters=None, name: str='', repr: str='', units: str='[-]', operation: 'function'=None, args: list=[]): 
+        
+        # Creating the parameter
+        structure = Struct(
+            key=name,
+            repr=repr,
+            units=units,
+            dtype=float,
+            default=None,
+            value=None
+        )
+
+        setattr(params, name, structure)
+
+        # Calculating the data and adding it to the data set
+        if structure.key not in self.data_full_set.columns:
+            new_col_vals = pd.Series(self.data_full_set[args[0].key])
+            for param in args[1:]:
+                if param.key not in self.data_full_set.columns:
+                    raise KeyError(f"'{param.key}' not found in data_full_set.")
+
+                if callable(operation):
+                    new_col_vals = operation(self.data_full_set, *args)
+                else: raise ValueError(f"Unsupported operation: {operation}")
+
+            new_col_vals.name = structure.key
+            self.data_full_set = pd.concat([
+                self.data_full_set,
+                new_col_vals,
+            ], axis=1)
+
+        else: print(f"'{structure.key}' already exists in data_full_set.")
+
+        self.data_full_set = self.data_full_set.copy()
+
     def show(self): 
         '''
         Displays the visual constructed using .build(). 
@@ -629,7 +664,7 @@ class SAMplot():
         self._label = label
         self._title = title
         self._line_style = style
-        self._plot_case = (bool(self.x) * self._x) + (bool(self.y) * self._y) + (bool(self.z) * self._z) + (bool(self.c) * self._c) + (bool(self.plot3d) * self._D)
+        self._plot_case = (bool(self.x) * self._x) + (bool(self.y) * self._y) + (bool(self.z) * self._z) + (bool(self.c) * self._c) + (bool(self.plot3d) * self._D) + (bool(self.twinx) * self._T)
         match self._plot_case: 
             case  0: # no axis, describes the optimal cycle
                 self._build_pie()
@@ -643,10 +678,12 @@ class SAMplot():
                 self._build_xyz_3d()
             case 31: # x+y+z, 3d plot with shaded contours and colorbar
                 self._build_xyzc_3d()
+            case 39: # x+y+z, on a twin-x plot
+                self._build_xyz_twinx()
             case _: 
                 raise AttributeError('Plot build configuration not available.')
 
-        if self.legend: plt.legend()
+        if self.legend and not self.twinx: plt.legend()
 
     def reset(self): 
         '''
@@ -896,13 +933,34 @@ class SAMplot():
         self._getdata(self.x, self.y)
         self._build_base()
 
+        def lighten(color, factor=0.5): 
+            # Remove '#' if present
+            color = color.lstrip('#')
+
+            # Convert hex to RGB
+            r = int(color[0:2], 16)
+            g = int(color[2:4], 16)
+            b = int(color[4:6], 16)
+
+            # Apply lightening
+            r = int(r + (255 - r) * factor)
+            g = int(g + (255 - g) * factor)
+            b = int(b + (255 - b) * factor)
+
+            # Clamp values to [0, 255] and convert back to hex
+            return "#{:02x}{:02x}{:02x}".format(min(r, 255), min(g, 255), min(b, 255))
+
         if not self.grayscale: 
-            color = '#221330'
-        else: color = 'black'
+            base = '#221330'
+        else: base = '#000000'
+
+        if (self.ax.lines or self.ax.collections) and self._color != None: 
+            self._color = lighten(self._color)
+        else: self._color = base
 
         if not self.scatter: 
-            self.ax.plot(self.data[self.x.key], self.data[self.y.key], color=color, linestyle=self._line_style, label=self._label)
-        else: self.ax.scatter(self.data[self.x.key], self.data[self.y.key], color=color, zorder=3)
+            self.ax.plot(self.data[self.x.key], self.data[self.y.key], color=self._color, linestyle=self._line_style, label=self._label)
+        else: self.ax.scatter(self.data[self.x.key], self.data[self.y.key], color=self._color, label=self._label, zorder=3)
 
     def _build_xyz(self): 
         self._getdata(self.x, self.y, self.z)
@@ -1036,6 +1094,57 @@ class SAMplot():
             cbar.set_label(f"{self.c.repr} {self.c.units}", fontsize=self._fontsize, labelpad=10)
             cbar.ax.tick_params(labelsize=self._fontsize)
 
+    def _build_xyz_twinx(self): 
+        self._getdata(self.x, self.y, self.z)
+        self._build_base()
+
+        def lighten(color, factor=0.5): 
+            # Remove '#' if present
+            color = color.lstrip('#')
+
+            # Convert hex to RGB
+            r = int(color[0:2], 16)
+            g = int(color[2:4], 16)
+            b = int(color[4:6], 16)
+
+            # Apply lightening
+            r = int(r + (255 - r) * factor)
+            g = int(g + (255 - g) * factor)
+            b = int(b + (255 - b) * factor)
+
+            # Clamp values to [0, 255] and convert back to hex
+            return "#{:02x}{:02x}{:02x}".format(min(r, 255), min(g, 255), min(b, 255))
+
+        if not self.grayscale: 
+            base = '#221330'
+        else: base = '#000000'
+
+        #---first axis
+        if (self.ax.lines or self.ax.collections) and self._color != None: 
+            self._color = lighten(self._color)
+        else: self._color = base
+
+        if not self.scatter: 
+            self.ax.plot(self.data[self.x.key], self.data[self.y.key], color=self._color, linestyle=self._line_style, label=self.y.acro)
+        else: self.ax.scatter(self.data[self.x.key], self.data[self.y.key], color=self._color, label=self.y.acro, zorder=3)
+
+        #---second axis
+        if (self.ax.lines or self.ax.collections) and self._color != None: 
+            self._color = lighten(self._color)
+        else: self._color = base
+
+        twinx = self.ax.twinx()
+        if not self.scatter: 
+            twinx.plot(self.data[self.x.key], self.data[self.z.key], color=self._color, linestyle=self._line_style, label=self.z.acro)
+        else: twinx.scatter(self.data[self.x.key], self.data[self.z.key], color=self._color, label=self.z.acro, zorder=3)
+        twinx.set_ylabel(f"{self.z.repr} {self.z.units}")
+
+        if self.legend: 
+
+            lines_1, labels_1 = self.ax.get_legend_handles_labels()
+            lines_2, labels_2 = twinx.get_legend_handles_labels()
+            self.ax.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper center')
+
     def _defaults(self): 
         self.x = False  # primary axis
         self.y = False  # secondary axis
@@ -1044,13 +1153,15 @@ class SAMplot():
 
         # general class members
         self._message = None
+        self._color = None
 
         # axis values to match-case the correct print function
-        self._x = 0b00001
-        self._y = 0b00010
-        self._z = 0b00100
-        self._c = 0b01000
-        self._D = 0b10000 
+        self._x = 0b000001
+        self._y = 0b000010
+        self._z = 0b000100
+        self._c = 0b001000
+        self._D = 0b010000 
+        self._T = 0b100000
 
         # initializing optional data structures
         self._last_set = pd.DataFrame()
@@ -1134,13 +1245,14 @@ if __name__=='__main__':
     samplt = SAMplot(source, dtypes=dtypes)
     samplt.normalize(params, params.levelized_cost_of_energy, 88.8201)
 
-    samplt.x = params.heliostat_cost
+    samplt.x = params.PHX_dT_hot
     samplt.y = params.levelized_cost_of_energy_norm
     samplt.z = params.PHX_hot_in
 
-    samplt.legend = False
-    samplt.plot3d = False
-    samplt.scatter = False
+    samplt.twinx   = True
+    samplt.legend  = True
+    samplt.plot3d  = False
+    samplt.scatter = True
     samplt.grayscale = False
     samplt.linelabels = False
 
@@ -1150,13 +1262,14 @@ if __name__=='__main__':
         (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
         
         # --- common filters
-        (params.PHX_cost_basis, lambda x: x >= 210), 
         (params.heliostat_cost, lambda x: x == 75),
+        (params.PHX_cost_basis, lambda x: x == 225), 
 
         # --- plot filtering
-        # (params.levelized_cost_of_energy, lambda x: x <= 100), 
+        (params.levelized_cost_of_energy, lambda x: x <= 200), 
+        (params.PHX_dT_hot, (min, params.levelized_cost_of_energy)), 
     )
-    
+
     samplt.build()
     samplt.show()
 
@@ -1256,6 +1369,116 @@ if __name__=='__main__':
         samplt.build(style='--')
         samplt.save(name='PHX Design Space')
         samplt.show()
+    def case2(): # 3d plot cycle info 1
+
+        samplt.x = params.PHX_cost_basis
+        samplt.y = params.PHX_hot_in
+        samplt.z = params.P_comp_in
+        samplt.c = params.levelized_cost_of_energy_norm
+
+        samplt.legend = False
+        samplt.plot3d = True
+        samplt.scatter = True
+        samplt.grayscale = False
+        samplt.linelabels = False
+
+        for temperature in samplt.data_full_set[params.PHX_hot_in.key].unique(): 
+            for basis in samplt.data_full_set[params.PHX_cost_basis.key].unique(): 
+
+                samplt.filter(
+                    # --- default filters 
+                    (params.try_s_cycle, lambda x: x == 1.00), 
+                    (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
+                    
+                    # --- common filters
+                    (params.PHX_cost_basis, lambda x: x == basis), 
+                    (params.heliostat_cost, lambda x: x == 75),
+
+                    # --- plot filtering
+                    (params.levelized_cost_of_energy, lambda x: x <= 150), 
+                    (params.PHX_hot_in, lambda x: x == temperature), 
+                    (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+                )
+
+                samplt.build()
+
+        samplt.ax.set_zlim(bottom=9.0)
+        samplt.show()
+        samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
+    def case3(): # 3d plot cycle info 2
+
+        samplt.x = params.PHX_cost_basis
+        samplt.y = params.PHX_hot_in
+        samplt.z = params.PHX_dT_hot
+        samplt.c = params.levelized_cost_of_energy_norm
+
+        samplt.legend = False
+        samplt.plot3d = True
+        samplt.scatter = True
+        samplt.grayscale = False
+        samplt.linelabels = False
+
+        for temperature in samplt.data_full_set[params.PHX_hot_in.key].unique(): 
+            for basis in samplt.data_full_set[params.PHX_cost_basis.key].unique(): 
+
+                samplt.filter(
+                    # --- default filters 
+                    (params.try_s_cycle, lambda x: x == 1.00), 
+                    (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
+                    
+                    # --- common filters
+                    (params.PHX_cost_basis, lambda x: x == basis), 
+                    (params.heliostat_cost, lambda x: x == 75),
+
+                    # --- plot filtering
+                    (params.levelized_cost_of_energy, lambda x: x <= 150), 
+                    (params.PHX_hot_in, lambda x: x == temperature), 
+                    (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+                )
+
+                samplt.build()
+
+        # samplt.ax.set_zlim(bottom=9.0)
+        samplt.show()
+        samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
+    def case4(): # 3d plot cycle info 3
+
+        samplt.x = params.PHX_cost_basis
+        samplt.y = params.PHX_hot_in
+        samplt.z = params.UA_recup_calc
+        samplt.c = params.levelized_cost_of_energy_norm
+
+        samplt.legend = False
+        samplt.plot3d = True
+        samplt.scatter = True
+        samplt.grayscale = False
+        samplt.linelabels = False
+
+        for temperature in samplt.data_full_set[params.PHX_hot_in.key].unique(): 
+            for basis in samplt.data_full_set[params.PHX_cost_basis.key].unique(): 
+
+                samplt.filter(
+                    # --- default filters 
+                    (params.try_s_cycle, lambda x: x == 1.00), 
+                    (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
+                    
+                    # --- common filters
+                    (params.PHX_cost_basis, lambda x: x == basis), 
+                    (params.heliostat_cost, lambda x: x == 75),
+
+                    # --- plot filtering
+                    (params.levelized_cost_of_energy, lambda x: x <= 150), 
+                    (params.PHX_hot_in, lambda x: x == temperature), 
+                    (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+                )
+
+                samplt.build()
+
+        samplt.ax.set_zlim(bottom=20.0)
+        samplt.show()
+        samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
+
+
 
     # samplt.baseline = (100, 65.1954)
     # ---
