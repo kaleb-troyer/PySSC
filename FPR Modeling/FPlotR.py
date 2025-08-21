@@ -10,7 +10,7 @@ from matplotlib.patches import ConnectionPatch
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import addcopyfighandler
+# import addcopyfighandler
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -980,47 +980,47 @@ class FPlotR():
 
 if __name__=='__main__': 
 
-    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-05-05_solutions.csv')
+    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-08-21_solutions_HSP4070.csv')
 
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
     fprplt = FPlotR(source, dtypes=dtypes)
 
-    fprplt.x = params.T_des_o
+    # fprplt.x = params.T_des_o
     # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
-    fprplt.y = [params.rhoc_avg, params.tauc_avg]
-    # fprplt.z = params.efficiency
+    # fprplt.y = [params.rhoc_avg, params.tauc_avg]
+    # fprplt.y = params.efficiency
 
-    fprplt.legend = True 
-    fprplt.plot3d = False
-    fprplt.barplot = True
-    fprplt.scatter = False
-    fprplt.colorbar = False
-    fprplt.grayscale = False 
-    fprplt.linelabels = False 
+    # fprplt.legend = True
+    # fprplt.plot3d = False
+    # fprplt.barplot = True
+    # fprplt.scatter = False
+    # fprplt.colorbar = False
+    # fprplt.grayscale = False
+    # fprplt.linelabels = False
 
-    fprplt.filter(
-        (params.T_des_i, lambda x: x == 550),
-        (params.q_des_o, lambda x: x == 200), 
-        (params.T_des_o, (max, params.efficiency)) 
-    ) 
+    # fprplt.filter(
+    #     (params.T_des_i, lambda x: x == 550),
+    #     (params.q_des_o, lambda x: x == 200),
+    #     (params.T_des_o, (max, params.efficiency))
+    # )
 
-    fprplt.ax.set_ylim(bottom=0.26, top=0.3)
-    fprplt.build()
-    fprplt.show()
-    
-    def case1(): 
+    # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
+    # fprplt.build()
+    # fprplt.show()
+
+    def case1():
         fprplt.x = params.q_des_o
         fprplt.y = params.T_des_i
         fprplt.z = params.efficiency
         fprplt.c = params.T_des_o
 
-        fprplt.legend = False 
+        fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
         fprplt.colorbar = False
-        fprplt.grayscale = False 
-        fprplt.linelabels = False 
+        fprplt.grayscale = False
+        fprplt.linelabels = False
 
         for val in fprplt.data_full_set[params.T_des_o.key].unique():
 
@@ -1029,35 +1029,36 @@ if __name__=='__main__':
                 if par == fprplt.data_full_set[params.T_des_i.key].unique()[-1] and val == fprplt.data_full_set[params.T_des_o.key].unique()[-1]: 
                     fprplt.colorbar = True
 
-                if val > par: 
+                if val > par:
                     fprplt.filter(
-                        (params.T_des_o, lambda x: x == val), 
+                        (params.T_des_o, lambda x: x == val),
                         (params.T_des_i, lambda x: x == par),
-                        (params.q_des_o, (max, params.efficiency)) 
-                    ) 
+                        (params.q_des_o, (max, params.efficiency))
+                    )
 
                     fprplt.build()
-        
+
+        fprplt.ax.zaxis.set_major_formatter("{:.3f}".format)
         fprplt.show()
     def case2(): 
         fprplt.x = params.T_des_o
         fprplt.y = params.T_des_i
         fprplt.z = params.efficiency
 
-        fprplt.legend = False 
+        fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
         fprplt.colorbar = False
-        fprplt.grayscale = False 
-        fprplt.linelabels = False 
+        fprplt.grayscale = False
+        fprplt.linelabels = False
 
-        for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
+        for par in fprplt.data_full_set[params.T_des_i.key].unique():
 
             fprplt.filter(
                 (params.T_des_i, lambda x: x == par),
-                (params.q_des_o, lambda x: x == 200), 
-                (params.T_des_o, (max, params.efficiency)) 
-            ) 
+                (params.q_des_o, lambda x: x == 200),
+                (params.T_des_o, (max, params.efficiency))
+            )
 
             fprplt.build()
 
@@ -1066,7 +1067,7 @@ if __name__=='__main__':
 
         fprplt.show()
     def case3(): 
-        def funct(df, To, Ti): 
+        def funct(df, To, Ti):
             return np.cos((np.log(df[To.key]) - (df[Ti.key] * 0.28989363)) / df[To.key]) - 0.24336664
 
         fprplt.newparam(
@@ -1077,19 +1078,19 @@ if __name__=='__main__':
         fprplt.y = params.eta_prime
         fprplt.z = params.efficiency
 
-        fprplt.legend = False 
+        fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
         fprplt.colorbar = False
-        fprplt.grayscale = False 
-        fprplt.linelabels = False 
+        fprplt.grayscale = False
+        fprplt.linelabels = False
 
         for val in fprplt.data_full_set[params.T_des_i.key].unique(): 
 
             fprplt.filter(
                 (params.T_des_i, lambda x: x == val),
-                (params.q_des_o, (max, params.efficiency)) 
-            ) 
+                (params.q_des_o, (max, params.efficiency))
+            )
 
             fprplt.build()
 
@@ -1097,8 +1098,8 @@ if __name__=='__main__':
         print(solution['equation'])
 
         fprplt.show()
-    def case4(): 
-        def get_thickness(df, mdot, Wa, Wr): 
+    def case4():
+        def get_thickness(df, mdot, Wa, Wr):
 
             rho = 2400
             sv = 0.01
@@ -1117,25 +1118,25 @@ if __name__=='__main__':
         fprplt.y = params.T_des_i
         fprplt.z = params.th
 
-        fprplt.legend = False 
+        fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
         fprplt.colorbar = False
-        fprplt.grayscale = False 
-        fprplt.linelabels = False 
+        fprplt.grayscale = False
+        fprplt.linelabels = False
 
-        for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
+        for par in fprplt.data_full_set[params.T_des_i.key].unique():
 
             fprplt.filter(
                 (params.T_des_i, lambda x: x == par),
-                (params.q_des_o, lambda x: x == 200), 
-                (params.T_des_o, (max, params.efficiency)) 
-            ) 
+                (params.q_des_o, lambda x: x == 200),
+                (params.T_des_o, (max, params.efficiency))
+            )
 
             fprplt.build()
 
         fprplt.show()
-    def case5(): 
+    def case5():
         def toKelvin(df, T, _):
             return df[T.key] + 273.15
 
@@ -1145,7 +1146,7 @@ if __name__=='__main__':
 
         fprplt.newparam(
             params, 'T_des_i_K', 'Receiver Inlet Temp', '[K]', toKelvin, [params.T_des_i, params.T_des_i]
-        ) 
+        )
 
         fprplt.normalize(
             params, params.T_des_o_K, 30 + 273.15
@@ -1159,20 +1160,20 @@ if __name__=='__main__':
         fprplt.y = params.T_des_i_K_norm
         fprplt.z = params.efficiency
 
-        fprplt.legend = False 
+        fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
         fprplt.colorbar = False
-        fprplt.grayscale = False 
-        fprplt.linelabels = False 
+        fprplt.grayscale = False
+        fprplt.linelabels = False
 
-        for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
+        for par in fprplt.data_full_set[params.T_des_i.key].unique():
 
             fprplt.filter(
                 (params.T_des_i, lambda x: x == par),
-                (params.q_des_o, lambda x: x == 200), 
-                (params.T_des_o, (max, params.efficiency)) 
-            ) 
+                (params.q_des_o, lambda x: x == 200),
+                (params.T_des_o, (max, params.efficiency))
+            )
 
             fprplt.build()
 
@@ -1181,3 +1182,6 @@ if __name__=='__main__':
 
         fprplt.show()
 
+    case5()
+
+# EOF

@@ -68,10 +68,10 @@ class System():
         self.figurename = 'unconfigured'
         self.filename   = file
         self.directory  = path
-        self.studyid  = ''
+        self.studyid    = ''
 
         if newrun: # the solutions.csv file is erased, if true. 
-            with open(os.path.join(self.directory, self.filename), mode='w', newline='') as file: 
+            with open(os.path.join(self.directory, self.filename), mode='w', newline='') as file:
                 pass # create a fresh solutions file for the new class
         else: # otherwise, previous solutions are loaded into the class
             df = pd.read_csv(os.path.join(self.directory, self.filename))
@@ -467,6 +467,7 @@ if __name__=='__main__':
     
     system = System(newrun=True, file='solutions.csv')
     system.update({
+        'htf'                  : 37,     # [-]
         'try_simple_cycle'     : 1,      # [-]
         'receiver_eta_mod'     : 1.0,    # [-]
         'heliostat_cost'       : 75,     # [$/m^2]
@@ -482,8 +483,8 @@ if __name__=='__main__':
         'W_dot_net_des'        : 100.0,  # [MWe]
     })
 
-    system.update(prebuilt='maxeta')
-    system.optimize(savefig=False)
+    # system.update(prebuilt='maxeta')
+    # system.optimize(savefig=False)
 
     system.update(prebuilt='minlcoe')
     system.optimize(savefig=False)
@@ -498,5 +499,4 @@ if __name__=='__main__':
     #     'T_htf_hot_des'       : np.arange(700, 1100, 20)
     # }, cores=4)
 
-
-
+# EOF

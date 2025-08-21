@@ -5,11 +5,11 @@ from collections import defaultdict
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import scipy.optimize as opt
-import addcopyfighandler
+# import addcopyfighandler
 import seaborn as sns
 import pyvista as pv
 import numpy as np
-import utilities
+# import utilities
 
 class Sand(): 
 
