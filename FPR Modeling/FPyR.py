@@ -136,11 +136,12 @@ class Receiver():
 
     def solve(self, study, guess): 
 
-        study.H_rec   = guess[0]
-        study.W_rec   = study.H_rec
+        # study.W_rec   = guess[0]
+        study.W_rec   = 12
+        study.H_rec   = 12
 
-        study.H_ratio = guess[1]
-        study.W_ratio = study.H_ratio
+        study.W_ratio = 1.0
+        study.H_ratio = 1.0
 
         return self.pdll.ssc_testing(*astuple(study))
 
@@ -158,8 +159,8 @@ class Receiver():
 
         variables = [guess[0], guess[1]]
         bounds = [
-            (0, 15),    # [m] Receiver Height
-            (0.2, 1.5)  # [-] Receiver Height Ratio
+            (3, 15),    # [m] Receiver Width
+            (0.2, 1.5)  # [-] Receiver Width Ratio
         ]
 
         results = opt.minimize(
@@ -174,8 +175,11 @@ class Receiver():
             }
         )
 
-        study.H_rec = results.x[0]
-        study.W_rec = results.x[0]
+        # study.H_rec = results.x[0]
+        # study.W_rec = results.x[0]
+        # study.W_ratio = results.x[1]
+        study.W_rec = 12
+        study.W_ratio = 1.0
         optimal_instance = self.pdll.ssc_testing(*astuple(study))
         return optimal_instance
 
@@ -376,21 +380,27 @@ if __name__=='__main__':
         T_des_o=np.arange(550, 1051, 50),
         q_des_o=np.arange(200,  601, 50),
         W_ratio=1.5, # optimized
-        H_ratio=1.5, # optimized
+        H_ratio=1.0, # fixed
         D_ratio=0.2  # static (doesn't matter)
     )
 
+    '''
+    Receiver height is fixed at 12m and the aspect ratio is set to 1.0. This is so that
+    the Reynolds number of the air entrained in the falling curtain is high enough to conform
+    to the expectations of a Sandia CFD-derived advection correlation. If Reynolds numbers are
+    to low, the Nusselt number becomes zero and the advective losses are set to zero.
+    '''
     guesses = [
         (s, r) for i, (s, r) in enumerate(
             [ (s, r) 
-                for s in np.linspace(3, 15, 3) # [m*1e-2] Receiver Size guesses
-                for r in np.linspace(0.2, 1.5, 3) # [m*1e-1] Receiver Aspect Ratio guesses
+                for s in np.linspace(3, 15, 3) # [m*1e-2] Receiver Width guesses
+                for r in np.linspace(0.2, 1.5, 3) # [m*1e-1] Receiver Width Aspect Ratio guesses
             ]
         )
     ]
 
     multiprocesing(studies, guesses, cores=6)
-
+    
     #----------------------------------------------#
     #--------- single-core simplification ---------#
     #----------------------------------------------#

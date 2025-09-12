@@ -428,6 +428,7 @@ class FPlotR():
         self.data = self.data_full_set
         for f in self._filters: 
             self.data = self.data[f(self.data)]
+            self.data = self.data.drop_duplicates()
 
     def build(self, title: str='', label: str='', style: str=''): 
         '''
@@ -980,7 +981,8 @@ class FPlotR():
 
 if __name__=='__main__': 
 
-    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-08-21_solutions_HSP4070.csv')
+    # source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-08-21_solutions_HSP4070.csv')
+    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', 'solutions.csv')
 
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
@@ -988,9 +990,9 @@ if __name__=='__main__':
 
     # fprplt.x = params.T_des_o
     # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
-    # fprplt.y = [params.rhoc_avg, params.tauc_avg]
-    # fprplt.y = params.efficiency
-
+    # # fprplt.y = params.q_des_o
+    # # fprplt.z = params.q_advective
+    #
     # fprplt.legend = True
     # fprplt.plot3d = False
     # fprplt.barplot = True
@@ -998,14 +1000,14 @@ if __name__=='__main__':
     # fprplt.colorbar = False
     # fprplt.grayscale = False
     # fprplt.linelabels = False
-
+    #
     # fprplt.filter(
     #     (params.T_des_i, lambda x: x == 550),
-    #     (params.q_des_o, lambda x: x == 200),
+    #     (params.q_des_o, lambda x: x == 500),
     #     (params.T_des_o, (max, params.efficiency))
     # )
-
-    # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
+    #
+    # # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
     # fprplt.build()
     # fprplt.show()
 
@@ -1181,7 +1183,85 @@ if __name__=='__main__':
         print(solution['equation'])
 
         fprplt.show()
+    def case6():
+        fprplt.x = params.q_des_o
+        fprplt.y = params.T_des_i
+        fprplt.z = params.efficiency
+        fprplt.c = params.T_des_o
 
-    case5()
+        fprplt.legend = False
+        fprplt.plot3d = True
+        fprplt.scatter = True
+        fprplt.colorbar = False
+        fprplt.grayscale = False
+        fprplt.linelabels = False
+
+        for val in fprplt.data_full_set[params.T_des_o.key].unique():
+
+            for par in fprplt.data_full_set[params.T_des_i.key].unique(): 
+
+                if par == fprplt.data_full_set[params.T_des_i.key].unique()[-1] and val == fprplt.data_full_set[params.T_des_o.key].unique()[-1]: 
+                    fprplt.colorbar = True
+
+                if val > par:
+                    fprplt.filter(
+                        (params.T_des_o, lambda x: x == val),
+                        (params.T_des_i, lambda x: x == par),
+                        (params.q_des_o, (max, params.efficiency))
+                    )
+
+                    fprplt.build()
+
+        fprplt.ax.zaxis.set_major_formatter("{:.3f}".format)
+        solution = fprplt.srfit(complexity=6)
+        print(solution['equation'])
+
+        fprplt.show()
+    
+    def case7(): 
+        
+        def r2_score(y_true: pd.Series, y_pred: pd.Series) -> float:
+            # Ensure alignment by index
+            y_true, y_pred = y_true.align(y_pred, join="inner")
+            
+            ss_res = ((y_true - y_pred) ** 2).sum()
+            ss_tot = ((y_true - y_true.mean()) ** 2).sum()
+            
+            return 1 - ss_res / ss_tot if ss_tot != 0 else float("nan")
+
+        def funct(df, Ti, qo): 
+            return (
+                ((df[Ti.key] + 3.791931) * -0.03496281) / df[qo.key]
+            ) + 0.9825462
+
+        fprplt.newparam(
+            params, 'eta_prime', 'Predicted Performance', '[-]', funct, [params.T_des_o, params.q_des_o] 
+        )
+
+        fprplt.x = params.efficiency
+        fprplt.y = params.eta_prime
+
+        fprplt.legend = False
+        fprplt.plot3d = False
+        fprplt.scatter = True
+        fprplt.colorbar = False
+        fprplt.grayscale = False
+        fprplt.linelabels = False
+        #
+        # fprplt.filter(
+        #     (params.q_des_o, (max, params.efficiency))
+        # )
+
+        fprplt.build()
+
+        fprplt.ax.set_xlim(0.7, 1)
+        fprplt.ax.set_ylim(0.7, 1)
+        plt.plot([0,1], [0,1], linewidth=0.5, color='grey')
+
+        print(r2_score(fprplt.data[params.efficiency.key], fprplt.data[params.eta_prime.key])) 
+
+        fprplt.show()
+
+    case7()
 
 # EOF

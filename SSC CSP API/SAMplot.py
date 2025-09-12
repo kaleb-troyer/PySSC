@@ -10,7 +10,7 @@ from matplotlib.patches import ConnectionPatch
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import addcopyfighandler
+# import addcopyfighandler
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -1174,6 +1174,7 @@ class SAMplot():
         self.scatter = False
         self.legend = False
         self.plot3d = False
+        self.twinx  = False
 
         # the figure and axis is created here so they get reset after .show()
         self.fig, self.ax = plt.subplots(figsize=(5.5, 4), dpi=100)
@@ -1239,37 +1240,37 @@ class SAMplot():
 
 if __name__=='__main__': 
 
-    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-05-12_full solution.csv')
+    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', 'solutions-HSP4070.csv')
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
     samplt = SAMplot(source, dtypes=dtypes)
     samplt.normalize(params, params.levelized_cost_of_energy, 88.8201)
 
-    samplt.x = params.PHX_dT_hot
+    samplt.x = params.eta_thermal_calc
     samplt.y = params.levelized_cost_of_energy_norm
-    samplt.z = params.PHX_hot_in
-
-    samplt.twinx   = True
-    samplt.legend  = True
+    samplt.z = params.rec_eta
+    
+    samplt.twinx   = False
+    samplt.legend  = False
     samplt.plot3d  = False
     samplt.scatter = True
     samplt.grayscale = False
     samplt.linelabels = False
-
+    
     samplt.filter(
         # --- default filters 
-        (params.try_s_cycle, lambda x: x == 1.00), 
-        (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
-        
+        # (params.try_s_cycle, lambda x: x == 1.00), 
+        # (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
+       
         # --- common filters
-        (params.heliostat_cost, lambda x: x == 75),
-        (params.PHX_cost_basis, lambda x: x == 225), 
+        # (params.heliostat_cost, lambda x: x == 75),
+        (params.PHX_cost_basis, lambda x: x == 225),
 
         # --- plot filtering
         (params.levelized_cost_of_energy, lambda x: x <= 200), 
-        (params.PHX_dT_hot, (min, params.levelized_cost_of_energy)), 
+        # (params.PHX_dT_hot, (min, params.levelized_cost_of_energy)), 
     )
-
+    
     samplt.build()
     samplt.show()
 
@@ -1279,8 +1280,9 @@ if __name__=='__main__':
         samplt.y = params.levelized_cost_of_energy_norm
         samplt.z = params.PHX_hot_in
 
-        samplt.legend = False
-        samplt.plot3d = False
+        samplt.twinx   = False
+        samplt.legend  = False
+        samplt.plot3d  = False
         samplt.scatter = False
         samplt.grayscale = False
         samplt.linelabels = False
@@ -1402,7 +1404,7 @@ if __name__=='__main__':
 
                 samplt.build()
 
-        samplt.ax.set_zlim(bottom=9.0)
+        # samplt.ax.set_zlim(bottom=9.0)
         samplt.show()
         samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
     def case3(): # 3d plot cycle info 2
@@ -1474,11 +1476,9 @@ if __name__=='__main__':
 
                 samplt.build()
 
-        samplt.ax.set_zlim(bottom=20.0)
+        # samplt.ax.set_zlim(bottom=20.0)
         samplt.show()
         samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
-
-
 
     # samplt.baseline = (100, 65.1954)
     # ---

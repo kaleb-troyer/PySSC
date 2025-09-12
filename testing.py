@@ -355,8 +355,7 @@ def sandfit(display=True):
         plt.plot(tspan, sifit, label='sand')
         plt.scatter(xs_bauxite, ys_bauxite, label='AlO2', zorder=3)
 
-
-def datafit(display=True, dataset=1):
+def datafit(T, display=True, dataset=1):
     file = f'HSP4070_{dataset}.csv'
     path = os.path.join(os.getcwd(), 'Figures and Data', 'data', file)
 
@@ -379,15 +378,14 @@ def datafit(display=True, dataset=1):
     print(f"{E:>10.5f}")
     print()
 
-    tspan = np.linspace(temps[0], 1200 + 273.15)
+    tspan = T
     scfit = shomate(tspan, A, B, C, D, E)
 
     if display:
-        plt.plot(temps, scaps, label=f'data set {dataset}')
-        plt.plot(tspan, scfit, label=f'fit for {dataset}')
+        # plt.plot(temps, scaps, label=f'data set {dataset}')
+        plt.plot(tspan, scfit, label=f'HSP 40/70 data')
 
     return A, B, C, D, E
-
 
 def tempfit():
 
@@ -424,11 +422,81 @@ def tempfit():
     plt.show()
 
 
+
+def cpAl2O3(T): 
+    M = 101.9613    # [g/mol]
+    A = 102.4290
+    B = 38.74980
+    C = -15.9109
+    D = 2.628181
+    E = -3.00755
+    cp_mol = shomate(T, A, B, C, D, E) # [J/mol-K]
+    return cp_mol / M
+
+def cpTiO2(T): 
+    return 0.683 # [J/g-K]
+
+def cpFeO(T): 
+    M = 71.844
+    A = 45.75120
+    B = 18.78553
+    C = -5.95220
+    D = 0.852779
+    E = -0.08127
+    cp_mol = shomate(T, A, B, C, D, E)
+    return cp_mol / M
+
+
+def cpHSP4070(T, a=0.486, b=0.2054, c=0, d=0.3086): 
+
+    Al_oxide = a * cpAl2O3(T)
+    Ti_oxide = b * cpTiO2(T)
+    Fe_oxide = c * cpFeO(T)
+    Si_oxide = d
+
+    sand = Sand()
+    sand.update(
+        temperature = T - 273.15
+    )
+
+    cp = Al_oxide + Ti_oxide + Fe_oxide + (Si_oxide * sand.specific_heat / 1000)
+    return cp
+
+
+def opt_chem_formula():
+    
+    def routine(params): 
+
+        a, b, c, d = params
+        T = np.linspace(600, 1400, 100)
+        cp1 = cpHSP4070(T, a, b, c, d)
+        A, B, C, D, E = datafit(T, display=False, dataset=2)
+        cp2 = shomate(T, A, B, C, D, E)
+        return np.sum((cp1 - cp2)**2)
+
+    x0 = [0.70, 0.05, 0.10, 0.15]
+    lincon = opt.LinearConstraint([1, 1, 1, 1], [1], [1])
+    bounds = [(0, 1), (0, 1), (0, 1), (0, 1)]
+
+    result = opt.minimize(routine, x0, bounds=bounds, method='SLSQP', constraints=[lincon])
+    print(result.x)
+
 if __name__ == '__main__':
 
-    tempfit()
+    Ts = np.linspace(600, 1475, 100)
+    cp = cpHSP4070(Ts)
+    
+    plt.plot(Ts, cp, label='HSP 40/70 estimate')
+    plt.xlabel('Temperature [K]')
+    plt.ylabel('Specific Heat [J/g-K]')
+    plt.margins(x=0)
+    plt.grid()
+    
+    datafit(Ts, display=True, dataset=2)
+    
+    plt.legend()
+    plt.show()
 
-
-
+    # opt_chem_formula()
 
 
