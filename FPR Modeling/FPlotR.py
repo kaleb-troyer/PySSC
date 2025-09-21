@@ -313,9 +313,9 @@ class FPlotR():
                 if param.key not in self.data_full_set.columns:
                     raise KeyError(f"'{param.key}' not found in data_full_set.")
 
-                if callable(operation):
-                    new_col_vals = operation(self.data_full_set, *args)
-                else: raise ValueError(f"Unsupported operation: {operation}")
+            if callable(operation):
+                 new_col_vals = operation(self.data_full_set, *args)
+            else: raise ValueError(f"Unsupported operation: {operation}")
 
             new_col_vals.name = structure.key
             self.data_full_set = pd.concat([
@@ -499,12 +499,20 @@ class FPlotR():
 
         # Extract points from collections
         if isinstance(self.ax, Axes3D):
+
+            if self.colorbar:
+                features = [self.x.key, self.y.key, self.c.key]
+            else: features = [self.x.key, self.y.key, self.c.key]
+
             for col in self.ax.collections:
                 if hasattr(col, '_offsets3d'):
                     x, y, z = col._offsets3d
-                    for xi, yi, zi in zip(x, y, z):
-                        points.append((xi, yi, zi))
-            features = [self.x.key, self.y.key]    
+                    if self.colorbar:
+                        c = col.get_array()
+                        point_collection = zip(x, y, c, z)
+                    else: point_collection = zip(x, y, z)
+                    for vals in point_collection:
+                        points.append(vals)
 
         else: # if the plot is not in 3D
             for col in self.ax.collections:
@@ -512,18 +520,18 @@ class FPlotR():
                 for offset in offsets:
                     xi, yi = offset
                     points.append((xi, yi))
-            features = [self.x.key]    
+            features = [self.x.key]
 
         points = np.array(points)
         X = pd.DataFrame(points[:, :-1], columns=features)
         Y = points[:,  -1]
 
-        # Example: fitting to sample data
+        # Fitting to sample data
         model = PySRRegressor(
             model_selection="best",     # Pick best model balancing simplicity & accuracy
             niterations=niters,         # Number of evolutionary steps
             binary_operators=["+", "-", "*", "/"],
-            unary_operators=["sqrt", "log", "exp", "sin", "cos"],
+            unary_operators=["sqrt", "log", "exp"],
             extra_sympy_mappings={"square": lambda x: x**2},
             verbosity=1,
             select_k_features=3 
@@ -531,31 +539,51 @@ class FPlotR():
 
         model.fit(X, Y)
 
-        if display and isinstance(self.ax, Axes3D): 
-            x = points[:, 0]
-            y = points[:, 1]
-            z = points[:, 2]
+        if display and isinstance(self.ax, Axes3D):
+            x = points[:,  0]
+            y = points[:,  1]
+            c = points[:,  2]
+            z = points[:, -1]
 
-            # Prepare meshgrid for plotting surface
-            x_lin = np.linspace(x.min(), x.max(), 100)
-            y_lin = np.linspace(y.min(), y.max(), 100)
-            x_grid, y_grid = np.meshgrid(x_lin, y_lin)
-            xymesh = np.column_stack([x_grid.ravel(), y_grid.ravel()])
+            if self.colorbar:
+                uniques = np.unique(c)
+                if len(c) > 2:
+                    midpnt = int(len(uniques)/2)
+                    L1 = uniques[0]
+                    L2 = uniques[midpnt]
+                    L3 = uniques[-1]
+                    layers = [L1, L2, L3]
+                else:
+                    L1 = uniques[0]
+                    L2 = uniques[-1]
+                    layers = [L1, L2]
+            else: layers = [np.nan]
 
-            # Predict using specified equation
-            if complexity == 'best': 
-                z_prediction = model.predict(xymesh).reshape(x_grid.shape)
-            else: # getting specific solution based on complexity
-                vars = model.feature_names_in_ 
-                if complexity > len(model.equations_): 
-                    complexity == len(model.equations_)
-                cell = model.equations_.iloc[complexity]
-                expr = cell["sympy_format"]
-                f = lambdify(vars, expr, modules="numpy")
-                z_prediction = f(*xymesh.T).reshape(x_grid.shape)
+            for layer in layers:
+                # Prepare meshgrid for plotting surface
+                x_lin = np.linspace(x.min(), x.max(), 100)
+                y_lin = np.linspace(y.min(), y.max(), 100)
+                x_grid, y_grid = np.meshgrid(x_lin, y_lin)
+                xymesh = np.column_stack([x_grid.ravel(), y_grid.ravel()])
 
-            # Plot surface from symbolic regression
-            self.ax.plot_surface(x_grid, y_grid, z_prediction, color='red', alpha=0.5, label='Best Fit')
+                if not np.isnan(layer):
+                    c_lin = np.full((xymesh.shape[0], 1), layer)
+                    xymesh = np.hstack([xymesh, c_lin])
+    
+                # Predict using specified equation
+                if complexity == 'best': 
+                    z_prediction = model.predict(xymesh).reshape(x_grid.shape)
+                else: # getting specific solution based on complexity
+                    vars = model.feature_names_in_ 
+                    if complexity > len(model.equations_): 
+                        complexity == len(model.equations_)
+                    cell = model.equations_.iloc[complexity]
+                    expr = cell["sympy_format"]
+                    f = lambdify(vars, expr, modules="numpy")
+                    z_prediction = f(*xymesh.T).reshape(x_grid.shape)
+    
+                # Plot surface from symbolic regression
+                self.ax.plot_surface(x_grid, y_grid, z_prediction, color='red', alpha=0.5, label='Best Fit')
 
         elif display: 
             x = points[:, 0]
@@ -788,7 +816,7 @@ class FPlotR():
             else: self.ax.scatter(subset[self.x.key], subset[self.y.key], color=colors[i], zorder=2)
         if self.linelabels and not self.grayscale: labelLines(self.ax.get_lines(), align=True, zorder=2.5, fontsize=6)
 
-        if self.colorbar: 
+        if self.colorbar:
             norm = mcolors.Normalize(vmin=min(contours), vmax=max(contours))
             cbar = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), ax=self.ax)
             cbar.set_label(f"{self.z.repr} {self.z.units}")
@@ -989,26 +1017,30 @@ if __name__=='__main__':
     fprplt = FPlotR(source, dtypes=dtypes)
 
     # fprplt.x = params.T_des_o
-    # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
-    # # fprplt.y = params.q_des_o
-    # # fprplt.z = params.q_advective
+    # # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
+    # fprplt.y = params.q_des_o
+    # fprplt.z = params.q_advective
+    # fprplt.c = params.T_des_i
     #
-    # fprplt.legend = True
-    # fprplt.plot3d = False
-    # fprplt.barplot = True
-    # fprplt.scatter = False
-    # fprplt.colorbar = False
+    # fprplt.legend = False
+    # fprplt.plot3d = True
+    # fprplt.barplot = False
+    # fprplt.scatter = True
+    # fprplt.colorbar = True
     # fprplt.grayscale = False
     # fprplt.linelabels = False
-    #
-    # fprplt.filter(
-    #     (params.T_des_i, lambda x: x == 550),
-    #     (params.q_des_o, lambda x: x == 500),
-    #     (params.T_des_o, (max, params.efficiency))
-    # )
-    #
-    # # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
+    
+    fprplt.filter(
+        # (params.T_des_i, lambda x: x == 550),
+        # (params.q_des_o, lambda x: x == 500),
+        # (params.T_des_o, (max, params.efficiency))
+    )
+    
+    # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
     # fprplt.build()
+    #
+    # solution = fprplt.srfit(complexity=-1, display=True)
+    # print(solution['equation'])
     # fprplt.show()
 
     def case1():
@@ -1183,16 +1215,29 @@ if __name__=='__main__':
         print(solution['equation'])
 
         fprplt.show()
+
     def case6():
-        fprplt.x = params.q_des_o
-        fprplt.y = params.T_des_i
+
+        def funct(df, T):
+            return (df[T.key] + 273.15) / (273.15 + 35)
+
+        fprplt.newparam(
+            params, 'Ti_norm', 'Normalized Inlet Temperature', '[-]', funct, [params.T_des_i]
+        )
+
+        fprplt.newparam(
+            params, 'To_norm', 'Normalized Outlet Temperature', '[-]', funct, [params.T_des_o]
+        )
+
+        fprplt.x = params.Ti_norm
+        fprplt.y = params.To_norm
         fprplt.z = params.efficiency
-        fprplt.c = params.T_des_o
+        fprplt.c = params.q_des_o
 
         fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
-        fprplt.colorbar = False
+        fprplt.colorbar = True
         fprplt.grayscale = False
         fprplt.linelabels = False
 
@@ -1217,8 +1262,9 @@ if __name__=='__main__':
         print(solution['equation'])
 
         fprplt.show()
+        return solution
     
-    def case7(): 
+    def case7():
         
         def r2_score(y_true: pd.Series, y_pred: pd.Series) -> float:
             # Ensure alignment by index
@@ -1229,13 +1275,22 @@ if __name__=='__main__':
             
             return 1 - ss_res / ss_tot if ss_tot != 0 else float("nan")
 
-        def funct(df, Ti, qo): 
-            return (
-                ((df[Ti.key] + 3.791931) * -0.03496281) / df[qo.key]
-            ) + 0.9825462
+        def functA(df, T):
+            return (df[T.key] + 273.15) / (273.15 + 35)
+
+        def functB(df, Ti_norm, To_norm, q_des_o):
+            return ((-6.8 - ((df[To_norm.key] * df[Ti_norm.key]) * 1.58)) / df[q_des_o.key]) + 0.967
 
         fprplt.newparam(
-            params, 'eta_prime', 'Predicted Performance', '[-]', funct, [params.T_des_o, params.q_des_o] 
+            params, 'Ti_norm', 'Normalized Inlet Temperature', '[-]', functA, [params.T_des_i]
+        )
+        
+        fprplt.newparam(
+            params, 'To_norm', 'Normalized Outlet Temperature', '[-]', functA, [params.T_des_o]
+        )
+
+        fprplt.newparam(
+            params, 'eta_prime', 'Predicted Performance', '[-]', functB, [params.Ti_norm, params.To_norm, params.q_des_o]
         )
 
         fprplt.x = params.efficiency
@@ -1247,12 +1302,21 @@ if __name__=='__main__':
         fprplt.colorbar = False
         fprplt.grayscale = False
         fprplt.linelabels = False
-        #
+        
         # fprplt.filter(
         #     (params.q_des_o, (max, params.efficiency))
         # )
 
         fprplt.build()
+
+        # print(fprplt.data_full_set.loc[1, params.efficiency.key])
+        # print(fprplt.data_full_set.loc[1, params.eta_prime.key])
+        # print(fprplt.data_full_set.loc[1, params.T_des_i.key])
+        # print(fprplt.data_full_set.loc[1, params.T_des_o.key])
+        # print(fprplt.data_full_set.loc[1, params.Ti_norm.key])
+        # print(fprplt.data_full_set.loc[1, params.To_norm.key])
+        # print(fprplt.data_full_set.loc[1, params.q_des_o.key])
+        # quit()
 
         fprplt.ax.set_xlim(0.7, 1)
         fprplt.ax.set_ylim(0.7, 1)
@@ -1262,6 +1326,8 @@ if __name__=='__main__':
 
         fprplt.show()
 
+    # solution = case6()
+    # print(solution)
     case7()
 
 # EOF
