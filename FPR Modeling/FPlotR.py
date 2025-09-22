@@ -1030,11 +1030,11 @@ if __name__=='__main__':
     # fprplt.grayscale = False
     # fprplt.linelabels = False
     
-    fprplt.filter(
+    # fprplt.filter(
         # (params.T_des_i, lambda x: x == 550),
         # (params.q_des_o, lambda x: x == 500),
         # (params.T_des_o, (max, params.efficiency))
-    )
+    # )
     
     # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
     # fprplt.build()

@@ -388,7 +388,7 @@ if __name__=='__main__':
     Receiver height is fixed at 12m and the aspect ratio is set to 1.0. This is so that
     the Reynolds number of the air entrained in the falling curtain is high enough to conform
     to the expectations of a Sandia CFD-derived advection correlation. If Reynolds numbers are
-    to low, the Nusselt number becomes zero and the advective losses are set to zero.
+    too low, the Nusselt number becomes zero and the advective losses are set to zero.
     '''
     guesses = [
         (s, r) for i, (s, r) in enumerate(
