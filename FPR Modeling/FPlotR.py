@@ -2,7 +2,7 @@
 import matplotlib as mpl
 mpl.rcParams['axes3d.mouserotationstyle'] = 'azel'  # 'azel', 'trackball', 'sphere', or 'arcball'
 
-from labellines import labelLines
+# from labellines import labelLines
 from matplotlib.collections import LineCollection
 from scipy.interpolate import interp1d as interp
 from matplotlib.tri import Triangulation as tri
@@ -314,7 +314,9 @@ class FPlotR():
                     raise KeyError(f"'{param.key}' not found in data_full_set.")
 
             if callable(operation):
-                 new_col_vals = operation(self.data_full_set, *args)
+                dfcols = [self.data_full_set[arg.key] for arg in args]
+                # new_col_vals = operation(self.data_full_set, *args)
+                new_col_vals = operation(*dfcols)
             else: raise ValueError(f"Unsupported operation: {operation}")
 
             new_col_vals.name = structure.key
@@ -531,7 +533,7 @@ class FPlotR():
             model_selection="best",     # Pick best model balancing simplicity & accuracy
             niterations=niters,         # Number of evolutionary steps
             binary_operators=["+", "-", "*", "/"],
-            unary_operators=["sqrt", "log", "exp"],
+            # unary_operators=["sqrt", "log", "exp"],
             extra_sympy_mappings={"square": lambda x: x**2},
             verbosity=1,
             select_k_features=3 
@@ -1009,39 +1011,36 @@ class FPlotR():
 
 if __name__=='__main__': 
 
-    # source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-08-21_solutions_HSP4070.csv')
-    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', 'solutions.csv')
+    source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-09-21_solutions_HSP4070.csv')
+    # source = os.path.join(os.getcwd(), 'FPR Modeling', 'results', '2025-09-22_solutions_SiO2sand.csv')
 
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
     fprplt = FPlotR(source, dtypes=dtypes)
 
-    # fprplt.x = params.T_des_o
-    # # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
-    # fprplt.y = params.q_des_o
-    # fprplt.z = params.q_advective
-    # fprplt.c = params.T_des_i
+    # fprplt.x = params.T_des_i
+    # fprplt.y = [params.q_reflective, params.q_advective, params.q_conductive, params.q_radiative]
+    # # fprplt.y = params.q_des_o
+    # # fprplt.z = params.q_advective
     #
-    # fprplt.legend = False
-    # fprplt.plot3d = True
-    # fprplt.barplot = False
-    # fprplt.scatter = True
-    # fprplt.colorbar = True
+    # fprplt.legend = True
+    # fprplt.plot3d = False
+    # fprplt.barplot = True
+    # fprplt.scatter = False
+    # fprplt.colorbar = False
     # fprplt.grayscale = False
     # fprplt.linelabels = False
-    
-    # fprplt.filter(
-        # (params.T_des_i, lambda x: x == 550),
-        # (params.q_des_o, lambda x: x == 500),
-        # (params.T_des_o, (max, params.efficiency))
-    # )
-    
-    # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
-    # fprplt.build()
     #
-    # solution = fprplt.srfit(complexity=-1, display=True)
-    # print(solution['equation'])
+    # fprplt.filter(
+    #     (params.T_des_i, lambda x: x == 550),
+    #     (params.q_des_o, lambda x: x == 500),
+    #     (params.T_des_o, (max, params.efficiency))
+    # )
+    #
+    # # fprplt.ax.set_ylim(bottom=0.26, top=0.3)
+    # fprplt.build()
     # fprplt.show()
+    # quit()
 
     def case1():
         fprplt.x = params.q_des_o
@@ -1101,8 +1100,8 @@ if __name__=='__main__':
 
         fprplt.show()
     def case3(): 
-        def funct(df, To, Ti):
-            return np.cos((np.log(df[To.key]) - (df[Ti.key] * 0.28989363)) / df[To.key]) - 0.24336664
+        def funct(To, Ti):
+            return np.cos((np.log(To) - (Ti * 0.28989363)) / To) - 0.24336664
 
         fprplt.newparam(
             params, 'eta_prime', 'Predicted Performance', '[-]', funct, [params.T_des_o, params.T_des_i] 
@@ -1133,13 +1132,13 @@ if __name__=='__main__':
 
         fprplt.show()
     def case4():
-        def get_thickness(df, mdot, Wa, Wr):
+        def get_thickness(mdot, Wa, Wr):
 
             rho = 2400
             sv = 0.01
             v = 6
 
-            th = df[mdot.key] / (df[Wa.key] * df[Wr.key] * v * rho * sv)
+            th = mdot / (Wa * Wr * v * rho * sv)
             return th
 
         fprplt.newparam(
@@ -1171,15 +1170,15 @@ if __name__=='__main__':
 
         fprplt.show()
     def case5():
-        def toKelvin(df, T, _):
-            return df[T.key] + 273.15
+        def toKelvin(T):
+            return T + 273.15
 
         fprplt.newparam(
-            params, 'T_des_o_K', 'Receiver Outlet Temp', '[K]', toKelvin, [params.T_des_o, params.T_des_o]
+            params, 'T_des_o_K', 'Receiver Outlet Temp', '[K]', toKelvin, [params.T_des_o]
         )
 
         fprplt.newparam(
-            params, 'T_des_i_K', 'Receiver Inlet Temp', '[K]', toKelvin, [params.T_des_i, params.T_des_i]
+            params, 'T_des_i_K', 'Receiver Inlet Temp', '[K]', toKelvin, [params.T_des_i]
         )
 
         fprplt.normalize(
@@ -1218,8 +1217,8 @@ if __name__=='__main__':
 
     def case6():
 
-        def funct(df, T):
-            return (df[T.key] + 273.15) / (273.15 + 35)
+        def funct(T):
+            return (T + 273.15) / (273.15 + 35)
 
         fprplt.newparam(
             params, 'Ti_norm', 'Normalized Inlet Temperature', '[-]', funct, [params.T_des_i]
@@ -1237,7 +1236,7 @@ if __name__=='__main__':
         fprplt.legend = False
         fprplt.plot3d = True
         fprplt.scatter = True
-        fprplt.colorbar = True
+        fprplt.colorbar = False
         fprplt.grayscale = False
         fprplt.linelabels = False
 
@@ -1275,11 +1274,19 @@ if __name__=='__main__':
             
             return 1 - ss_res / ss_tot if ss_tot != 0 else float("nan")
 
-        def functA(df, T):
-            return (df[T.key] + 273.15) / (273.15 + 35)
+        def rmse_score(y_true: pd.Series, y_pred: pd.Series) -> float:
+            # Ensure alignment by index
+            y_true, y_pred = y_true.align(y_pred, join="inner")
+            
+            mse = ((y_true - y_pred) ** 2).mean()
+            return np.sqrt(mse) if not np.isnan(mse) else float("nan")
 
-        def functB(df, Ti_norm, To_norm, q_des_o):
-            return ((-6.8 - ((df[To_norm.key] * df[Ti_norm.key]) * 1.58)) / df[q_des_o.key]) + 0.967
+        def functA(T):
+            return (T + 273.15) / (273.15 + 35)
+
+        def functB(Ti_norm, To_norm, q_des_o):
+            return ((-6.8 - ((To_norm * Ti_norm) * 1.58)) / q_des_o) + 0.967
+            # return (0.845 - (Ti_norm * (0.122 / To_norm))) + ((6.37 * (1.19 - To_norm)) / q_des_o)
 
         fprplt.newparam(
             params, 'Ti_norm', 'Normalized Inlet Temperature', '[-]', functA, [params.T_des_i]
@@ -1303,31 +1310,17 @@ if __name__=='__main__':
         fprplt.grayscale = False
         fprplt.linelabels = False
         
-        # fprplt.filter(
-        #     (params.q_des_o, (max, params.efficiency))
-        # )
-
         fprplt.build()
 
-        # print(fprplt.data_full_set.loc[1, params.efficiency.key])
-        # print(fprplt.data_full_set.loc[1, params.eta_prime.key])
-        # print(fprplt.data_full_set.loc[1, params.T_des_i.key])
-        # print(fprplt.data_full_set.loc[1, params.T_des_o.key])
-        # print(fprplt.data_full_set.loc[1, params.Ti_norm.key])
-        # print(fprplt.data_full_set.loc[1, params.To_norm.key])
-        # print(fprplt.data_full_set.loc[1, params.q_des_o.key])
-        # quit()
-
-        fprplt.ax.set_xlim(0.7, 1)
-        fprplt.ax.set_ylim(0.7, 1)
+        fprplt.ax.set_xlim(0.5, 1)
+        fprplt.ax.set_ylim(0.5, 1)
         plt.plot([0,1], [0,1], linewidth=0.5, color='grey')
 
-        print(r2_score(fprplt.data[params.efficiency.key], fprplt.data[params.eta_prime.key])) 
+        print(r2_score(fprplt.data[params.efficiency.key], fprplt.data[params.eta_prime.key]))
+        print(rmse_score(fprplt.data[params.efficiency.key], fprplt.data[params.eta_prime.key]))
 
         fprplt.show()
 
-    # solution = case6()
-    # print(solution)
-    case7()
+    case1()
 
 # EOF

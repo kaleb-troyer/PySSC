@@ -300,7 +300,7 @@ class Sand():
             for i, h_target in enumerate(self.enthalpy):
                 if self._get_enthalpy(T_min) > h_target or self._get_enthalpy(T_max) < h_target:
                     raise ValueError("Target enthalpy is outside the valid range of temperatures.")
-                temperatures[i] = opt.brentq(lambda T: self._get_enthalpy(T) - h_target, T_min, T_max)            
+                temperatures[i] = opt.brentq(lambda T: self._get_enthalpy(T) - h_target, T_min, T_max)
             self.temperature = temperatures
             
         else: # if not vectorized
@@ -632,10 +632,10 @@ class PyHX():
             self.nodes_htc_warm = []
             self.nodes_pressure = [self.pressure]
 
-            for i, UA in enumerate(self.nodes_UA): 
+            for i, UA in enumerate(self.nodes_UA):
                 UAi = self.nodes_UA[i]
                 T_warm_avg = (self.nodes_T_warm[-(i+1)] + self.nodes_T_warm[-(i+2)]) / 2
-                T_cold_avg = (self.nodes_T_cold[-(i+1)] + self.nodes_T_cold[-(i+2)]) / 2   
+                T_cold_avg = (self.nodes_T_cold[-(i+1)] + self.nodes_T_cold[-(i+2)]) / 2
                 air.update(
                     Input.temperature(T_warm_avg), Input.pressure(self.atmosphere)
                 )
@@ -659,11 +659,11 @@ class PyHX():
                 self.nodes_length.append(dxi)
                 self.nodes_pressure.append(self.nodes_pressure[-1] - self.pipe.dp)
 
-            self.x = W 
+            self.x = W
             self.y = self.Nchy * (tc + th) + tc
             self.z = sum(self.nodes_length)
             
-            if geo=='TO': 
+            if geo=='TO':
                 to_factor = 1.1
             else: to_factor = 1.0
             self.volume = self.z * self.Nchy * (to_factor * self.x * tc - (np.pi/4) * Di**2 * self.Nchx)
@@ -699,10 +699,10 @@ class PyHX():
             self.y = max(self._celly) - min(self._celly) + self._ynom
             self.z = max(self._cellz) - min(self._cellz) + self._znom
 
-        if mat not in {'SiC', '316H'}: 
+        if mat not in {'SiC', '316H'}:
             raise ValueError(f"Material '{mat}' not recognized.")
         else: self._mat = mat
-        if geo not in {'TO', 'FP'}: 
+        if geo not in {'TO', 'FP'}:
             raise ValueError(f"Geometry '{geo}' not recognized.")
         else: self._geo = geo
 
@@ -713,16 +713,16 @@ class PyHX():
 
         self.pipe.silent = self.silent
 
-        def objective(x): 
+        def objective(x):
             W, valve = x
             return routine(W, valve)
 
         initial_guess = (15, 0.2) # width and valve position
         result = opt.minimize(
-            objective, 
+            objective,
             initial_guess,
-            method='L-BFGS-B', 
-            bounds=[(5, 30), (0.1, 0.9)] 
+            method='L-BFGS-B',
+            bounds=[(5, 30), (0.1, 0.9)]
         )
 
         routine(result.x[0], result.x[1])
@@ -734,9 +734,9 @@ class PyHX():
 
         self.pipe.update(
             Model.Pipe(
-                D=Di, 
+                D=Di,
                 L=sum(self.nodes_length),
-                massflow=self.m_dot_cold/(self.Nchx * (self.Nchy + 1)), 
+                massflow=self.m_dot_cold/(self.Nchx * (self.Nchy + 1)),
                 e=roughness()
             )
         )
@@ -822,46 +822,46 @@ class PyHX():
         self.atmosphere = 101325    # [Pa]  atmospheric pressure
 
         # instantiating unsolved values and data structures
-        self.pressure_losses = None 
+        self.pressure_losses = None
         self.nodes_htc_warm  = None
-        self.nodes_pressure  = None 
-        self.effectiveness   = None 
-        self.nodes_T_warm    = None 
-        self.nodes_T_cold    = None 
-        self.nodes_h_warm    = None 
-        self.nodes_h_cold    = None 
-        self.nodes_C_warm    = None 
-        self.nodes_C_cold    = None 
-        self.nodes_length    = None 
-        self.m_dot_warm      = None 
-        self.m_dot_cold      = None 
-        self.cellcountx      = None 
-        self.cellcounty      = None 
-        self.cellcountz      = None 
-        self.cellcount       = None 
-        self.nodes_UA        = None 
+        self.nodes_pressure  = None
+        self.effectiveness   = None
+        self.nodes_T_warm    = None
+        self.nodes_T_cold    = None
+        self.nodes_h_warm    = None
+        self.nodes_h_cold    = None
+        self.nodes_C_warm    = None
+        self.nodes_C_cold    = None
+        self.nodes_length    = None
+        self.m_dot_warm      = None
+        self.m_dot_cold      = None
+        self.cellcountx      = None
+        self.cellcounty      = None
+        self.cellcountz      = None
+        self.cellcount       = None
+        self.nodes_UA        = None
         self.massflux        = None
-        self.volume          = None 
-        self._cellx          = None 
-        self._celly          = None 
-        self._cellz          = None 
-        self._xgap           = None 
-        self._ygap           = None 
-        self._zgap           = None 
-        self._xnom           = None 
-        self._ynom           = None 
-        self._znom           = None 
+        self.volume          = None
+        self._cellx          = None
+        self._celly          = None
+        self._cellz          = None
+        self._xgap           = None
+        self._ygap           = None
+        self._zgap           = None
+        self._xnom           = None
+        self._ynom           = None
+        self._znom           = None
         self.valve           = None
-        self.Nchx            = None 
-        self.Nchy            = None 
+        self.Nchx            = None
+        self.Nchy            = None
         self._mat            = None
         self._geo            = None
-        self.UA              = None 
-        self.x               = None 
-        self.y               = None 
-        self.z               = None 
+        self.UA              = None
+        self.x               = None
+        self.y               = None
+        self.z               = None
 
-if __name__=='__main__': 
+if __name__=='__main__':
 
     # geometry
     Di = 0.003 # [m] Diameter of the cold channels
@@ -869,7 +869,7 @@ if __name__=='__main__':
     th = 0.003 # [m] Warm channel thickness
     tc = 0.006 # [m] Cold channel thickness
 
-    case = 3
+    case = 2
     match case: 
         case 1:
             # basis=~100%
@@ -884,7 +884,7 @@ if __name__=='__main__':
             # basis=~225%
             N = 30
             P = 25e6
-            duty = 201.74e6  
+            duty = 201.74e6
             warm = (607.87, 1060.0)  # [C]
             cold = (587.87,  760.0)  # [C]
             mat = 'SiC'

@@ -839,7 +839,7 @@ class SAMplot():
         
         plant_values.append(other_value)
         plant_ratios.append(other_ratio)
-        plant_labels.append("Other")
+        plant_labels.append("$Other$")
 
         #---creating the pie chart
         fontsize = 6
@@ -915,11 +915,13 @@ class SAMplot():
         self._message = (
             f"""
 #---Best Design, Cycle Summary
+{params.htf_code.repr:.<30}{series[params.htf_code.key]:.>10.2f} {params.htf_code.units}
 {params.eta_thermal_calc.repr:.<30}{series[params.eta_thermal_calc.key]:.>10.3f} {params.eta_thermal_calc.units}
-{params.PHX_hot_in.repr:.<30}{series[params.PHX_hot_in.key]:.>10.2f} {params.PHX_hot_in.units}
+{params.rec_eta.repr:.<30}{series[params.rec_eta.key]:.>10.3f} {params.rec_eta.units}
+{params.q_dot_PHX.repr:.<30}{series[params.q_dot_PHX.key]:.>10.2f} {params.q_dot_PHX.units}
 {params.PHX_dT_hot.repr:.<30}{series[params.PHX_dT_hot.key]:.>10.2f} {params.PHX_dT_hot.units}
 {params.PHX_dT_cold.repr:.<30}{series[params.PHX_dT_cold.key]:.>10.2f} {params.PHX_dT_cold.units}
-{params.q_dot_PHX.repr:.<30}{series[params.q_dot_PHX.key]:.>10.2f} {params.q_dot_PHX.units}
+{params.PHX_hot_in.repr:.<30}{series[params.PHX_hot_in.key]:.>10.2f} {params.PHX_hot_in.units}
 {params.T_co2_PHX_in.repr:.<30}{series[params.T_co2_PHX_in.key]:.>10.2f} {params.T_co2_PHX_in.units}
 
 {params.cycle_capital_cost.repr:.<30}{series[params.cycle_capital_cost.key]:.>10.2f} {params.cycle_capital_cost.units}
@@ -1240,45 +1242,45 @@ class SAMplot():
 
 if __name__=='__main__': 
 
-    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', 'solutions-HSP4070.csv')
+    source = os.path.join(os.getcwd(), 'SSC CSP API', 'results', '2025-09-28_solutions.csv')
     params = Parameters()
     dtypes = {par.key: par.dtype for par in params.get()}
     samplt = SAMplot(source, dtypes=dtypes)
-    samplt.normalize(params, params.levelized_cost_of_energy, 88.8201)
+    samplt.normalize(params, params.levelized_cost_of_energy, 86.8048)
 
-    samplt.x = params.eta_thermal_calc
-    samplt.y = params.levelized_cost_of_energy_norm
-    samplt.z = params.rec_eta
+#    samplt.x = params.PHX_hot_in
+#    samplt.y = params.cycle_capital_cost
+#    samplt.z = params.plant_capital_cost
     
     samplt.twinx   = False
     samplt.legend  = False
     samplt.plot3d  = False
-    samplt.scatter = True
+    samplt.scatter = False
     samplt.grayscale = False
     samplt.linelabels = False
     
     samplt.filter(
-        # --- default filters 
-        # (params.try_s_cycle, lambda x: x == 1.00), 
-        # (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01), 
-       
+        # --- default filters
+        (params.try_s_cycle, lambda x: x == 1.00),
+        (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01),
+    
         # --- common filters
-        # (params.heliostat_cost, lambda x: x == 75),
+        (params.htf_code, lambda x: x == 37),
         (params.PHX_cost_basis, lambda x: x == 225),
-
+    
         # --- plot filtering
-        (params.levelized_cost_of_energy, lambda x: x <= 200), 
-        # (params.PHX_dT_hot, (min, params.levelized_cost_of_energy)), 
+        (params.levelized_cost_of_energy, lambda x: x <= 100),
+        (params.PHX_hot_in, (min, params.levelized_cost_of_energy)),
     )
     
     samplt.build()
     samplt.show()
+    # samplt.save(name='f18_PIT-dTh-LCOE_htf37')
 
-    def case1(): # phx design space 
+    def case1(): # phx design space
 
         samplt.x = params.PHX_cost_basis
         samplt.y = params.levelized_cost_of_energy_norm
-        samplt.z = params.PHX_hot_in
 
         samplt.twinx   = False
         samplt.legend  = False
@@ -1288,16 +1290,16 @@ if __name__=='__main__':
         samplt.linelabels = False
 
         samplt.filter(
-            (params.try_s_cycle, lambda x: x == 1), 
-            (params.UA_recup_tot, lambda x: x != 30000), 
-            (params.PHX_dT_cold, lambda x: x == 20), 
-            (params.PHX_dT_hot, lambda x: x == 280), 
-            (params.PHX_hot_in, lambda x: x % 20 == 0 and x <= 1100 and x >= 760 and x not in [980]), 
-            (params.rec_eta_mod, lambda x: x >= 0.99), 
+            (params.try_s_cycle, lambda x: x == 1),
+            (params.UA_recup_tot, lambda x: x != 30000),
+            (params.PHX_dT_cold, lambda x: x == 20),
+            (params.PHX_dT_hot, lambda x: x == 280),
+            (params.PHX_hot_in, lambda x: x % 20 == 0 and x <= 1100 and x >= 760),
+            (params.rec_eta_mod, lambda x: x >= 0.99),
             (params.heliostat_cost, lambda x: x == 75),
             (params.PHX_cost_basis, (min, params.levelized_cost_of_energy))
         )
-
+        
         samplt.build()
         for line in plt.gca().get_lines():
             line.set_label('')
@@ -1307,15 +1309,14 @@ if __name__=='__main__':
         samplt.ax.scatter(100, 1, marker='D', label='baseline', color='black', zorder=3, s=12)
 
         samplt.ax.plot(
-            [50, samplt.data[params.PHX_cost_basis.key].max()], 
+            [samplt.data[params.PHX_cost_basis.key].min(), samplt.data[params.PHX_cost_basis.key].max()], 
             [1.0, 1.0], 
             color = 'black', 
             linestyle = '--', 
-            # linewidth = 1.0
         )
 
         samplt.ax.plot(
-            [50, samplt.data[params.PHX_cost_basis.key].max()], 
+            [samplt.data[params.PHX_cost_basis.key].min(), samplt.data[params.PHX_cost_basis.key].max()], 
             [0.985, 0.985], 
             color = 'gray', 
             linestyle = '-', 
@@ -1327,6 +1328,7 @@ if __name__=='__main__':
         samplt.ax.set_ylim(top=1.03)
 
         samplt.filter(
+            (params.htf_code, lambda x: x == 36),
             (params.try_s_cycle, lambda x: x == 1), 
             (params.UA_recup_tot, lambda x: x != 30000), 
             (params.PHX_dT_cold, lambda x: x == 20), 
@@ -1336,27 +1338,27 @@ if __name__=='__main__':
             (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
         )
 
-        error = 0.0
-        # $13365/kg to print, assume 100x decrease in production
-        # divide by $/UA of FP, 316H PHX, assuming materials = 30% of total cost
-        SiC_cost_basis = 240
-        SiC_LCOE_opted = np.interp(
-            SiC_cost_basis, 
-            samplt.data[params.PHX_cost_basis.key], 
-            samplt.data[params.levelized_cost_of_energy_norm.key]
-        )
-
-        samplt.ax.errorbar(
-            SiC_cost_basis, SiC_LCOE_opted, 
-            xerr=SiC_cost_basis * error, 
-            fmt='o', 
-            color='black', 
-            capsize=0, 
-            markersize=4, 
-            linewidth=0, 
-            capthick=0, 
-            label='TO SiC'
-        )
+        # error = 0.0
+        # # $13365/kg to print, assume 100x decrease in production
+        # # divide by $/UA of FP, 316H PHX, assuming materials = 30% of total cost
+        # SiC_cost_basis = 240
+        # SiC_LCOE_opted = np.interp(
+        #     SiC_cost_basis, 
+        #     samplt.data[params.PHX_cost_basis.key], 
+        #     samplt.data[params.levelized_cost_of_energy_norm.key]
+        # )
+        #
+        # samplt.ax.errorbar(
+        #     SiC_cost_basis, SiC_LCOE_opted, 
+        #     xerr=SiC_cost_basis * error, 
+        #     fmt='o', 
+        #     color='black', 
+        #     capsize=0, 
+        #     markersize=4, 
+        #     linewidth=0, 
+        #     capthick=0, 
+        #     label='TO SiC'
+        # )
 
         samplt.x = params.PHX_cost_basis
         samplt.y = params.levelized_cost_of_energy_norm
@@ -1368,8 +1370,21 @@ if __name__=='__main__':
         samplt.grayscale = False
         samplt.linelabels = False
 
-        samplt.build(style='--')
-        samplt.save(name='PHX Design Space')
+        samplt.build(style='--', label='Silica Sand')
+
+        samplt.filter(
+            (params.htf_code, lambda x: x == 37),
+            (params.try_s_cycle, lambda x: x == 1), 
+            (params.UA_recup_tot, lambda x: x != 30000), 
+            (params.PHX_dT_cold, lambda x: x == 20), 
+            (params.rec_eta_mod, lambda x: x >= 0.99), 
+            (params.levelized_cost_of_energy, lambda x: x <= 100), 
+            (params.heliostat_cost, lambda x: x == 75),
+            (params.PHX_cost_basis, (min, params.levelized_cost_of_energy)), 
+        )
+
+        samplt.build(label='HSP 40/70')
+        samplt.save(name='f22_SiC-PHX-impact')
         samplt.show()
     def case2(): # 3d plot cycle info 1
 
@@ -1479,6 +1494,104 @@ if __name__=='__main__':
         # samplt.ax.set_zlim(bottom=20.0)
         samplt.show()
         samplt.save(name=f'{samplt.x.key}_{samplt.y.key}_{samplt.z.key}')
+
+    def case5(): # temperature profile through the tower
+
+        from matplotlib.lines import Line2D
+
+        # samplt.x = params.PHX_dT_hot
+        # samplt.y = params.levelized_cost_of_energy_norm
+        # samplt.z = params.PHX_hot_in
+        
+        samplt.twinx   = False
+        samplt.legend  = False
+        samplt.plot3d  = False
+        samplt.scatter = False
+        samplt.grayscale = False
+        samplt.linelabels = False
+        
+        samplt.filter(
+            # --- default filters 
+            (params.try_s_cycle, lambda x: x == 1.00),
+            (params.rec_eta_mod, lambda x: x >= 0.99 and x <= 1.01),
+        
+            # --- common filters
+            (params.htf_code, lambda x: x == 36),
+            (params.PHX_cost_basis, lambda x: x == 225),
+        
+            # --- plot filtering
+            (params.levelized_cost_of_energy, lambda x: x <= 100),
+            (params.PHX_dT_hot, (min, params.levelized_cost_of_energy)),
+        )
+    
+        samplt.build()
+
+        Wf = samplt.data[params.W_dot_net.key]
+        et = samplt.data[params.eta_thermal_calc.key]
+        eg = samplt.data[params.gross_to_net.key]
+        er = samplt.data[params.rec_eta.key]
+        md = samplt.data[params.m_dot_htf_des.key]
+        al = 0.559
+        rh = 1625
+        rr = 15.0 * 0.8
+        CF = 0.71
+        SM = 2.50
+        Wf = Wf * SM / (et * eg * er)
+        V  = md / rh * 3600 * 14.0
+
+        Htow = 64.77 + (0.3177 * Wf)
+        Hrec = 12.00
+        Hphx = 1.290
+        Htes = (V / (np.pi * rr**2)) + (2/3) * rr * np.tan(al)
+        
+        T4 = samplt.data[params.T_htf_cold_des.key]
+        T3 = samplt.data[params.PHX_hot_in.key]
+        T2 = T3 + 5.0
+        T5 = T4 - 5.0
+        T1 = T5
+        
+        ROT = T4 - samplt.data[params.PHX_dT_cold.key]
+        TIT = T3 - samplt.data[params.PHX_dT_hot.key]
+
+        tset = [T1, T2, T3, T4, T5, T1]
+        hset = [Htow+Hrec, Htow, Htow-Htes, Htow-Htes-Hphx, Htow-Htes-Hphx-Htes, Htow+Hrec]
+        labs = ['$FPR_i$', '$FPR_o$', '$PHX_i$', '$PHX_o$', '$TES_{c,o}$', '']
+
+        plt.clf()
+
+        plt.plot(tset, hset, color='black')
+        plt.scatter(tset[:-1], hset[:-1], color='black')
+
+        for i in range(0, len(tset)-1):
+            plt.text(tset[i] + 10, hset[i] + 1.5, i, color='black', label=f'{i} {labs[i]}', ha='left', va='bottom')
+
+            plt.annotate(
+                '',  # no text
+                xy=(tset[i+1], hset[i+1]),
+                xytext=(tset[i], hset[i]),
+                arrowprops=dict(
+                    arrowstyle='->',
+                    color='black',
+                    lw=1,
+                    shrinkA=1,
+                    shrinkB=1,
+                    mutation_scale=20
+                )
+            )
+
+        handles = [Line2D([], [], color='none', label=f"{i+1} - {labs[i]}") for i in range(len(labs)-1)]
+        plt.legend(
+            handles=handles,
+            loc='best',
+            handlelength=0,
+            handletextpad=0,
+            frameon=True,
+        )
+
+        plt.xlabel('Particle Temperature [K]')
+        plt.ylabel('Elevation [m]')
+        plt.ylim(top=max(hset)*1.03)
+        plt.show()
 
     # samplt.baseline = (100, 65.1954)
     # ---

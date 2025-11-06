@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from pyfluids import Fluid, FluidsList, Input
 
-def relthickness(sv, dP=24.9): 
+def relthickness(sv, dP=24.9):
     E1 = -np.sqrt(3) * dP + np.sqrt(3 * dP**2 + 4 * sv**2)
     E2 = 2 * sv
     return 1 - (E1 / E2)

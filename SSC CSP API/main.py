@@ -410,7 +410,7 @@ class System():
         self.parameters["eta_thermal_des"]      = 0.44      # [-]   Target power cycle thermal efficiency (used when design_method == 1)
         self.parameters["UA_recup_tot_des"]     = 15 * 1000 * (self.parameters["W_dot_net_des"]) / 50.0  # [kW/K] (used when design_method == 2). If < 0, optimize. 
             # Pressures and recompression fraction
-        self.parameters["is_recomp_ok"]         = 1 	    # [-]   1 = Yes, 0 = simple cycle only, < 0 = fix f_recomp to abs(input)
+        self.parameters["is_recomp_ok"]         = 1         # [-]   1 = Yes, 0 = simple cycle only, < 0 = fix f_recomp to abs(input)
         self.parameters["is_P_high_fixed"]      = 1         # [-]   0 = No, optimize. 1 = Yes (=P_high_limit)
         self.parameters["is_PR_fixed"]          = 0         # [-]   0 = No, >0 = fixed pressure ratio at input <0 = fixed LP at abs(input)
         self.parameters["is_IP_fixed"]          = 0         # [-]   partial cooling config: 0 = No, >0 = fixed HP-IP pressure ratio at input, <0 = fixed IP at abs(input)
@@ -422,7 +422,7 @@ class System():
         self.parameters["eta_isen_mc"]          = 0.85      # [-]   Main compressor isentropic efficiency
         self.parameters["eta_isen_rc"]          = 0.85      # [-]   Recompressor isentropic efficiency
         self.parameters["eta_isen_pc"]          = 0.85      # [-]   Precompressor isentropic efficiency
-        self.parameters["gross_to_net"]         = 0.90      # [-]   Turbine / generator gross-to-net conversion factor
+        self.parameters["gross_to_net"]         = 0.98      # [-]   Turbine / generator gross-to-net conversion factor
         # Weiland & Thimsen 2016
         # Recommended turbine efficiencies are 90% for axial turbines above 30 MW, and 85% for radial turbines below 30 MW.
         self.parameters["eta_isen_t"]           = 0.90      # [-]   Turbine isentropic efficiency
@@ -467,7 +467,7 @@ if __name__=='__main__':
     
     system = System(newrun=True, file='solutions.csv')
     system.update({
-        'htf'                  : 37,     # [-]
+        'htf'                  : 36,     # [-]
         'try_simple_cycle'     : 1,      # [-]
         'receiver_eta_mod'     : 1.0,    # [-]
         'heliostat_cost'       : 75,     # [$/m^2]
@@ -483,11 +483,11 @@ if __name__=='__main__':
         'W_dot_net_des'        : 100.0,  # [MWe]
     })
 
-    # system.update(prebuilt='maxeta')
-    # system.optimize(savefig=False)
-
-    system.update(prebuilt='minlcoe')
+    system.update(prebuilt='maxeta')
     system.optimize(savefig=False)
+
+    # system.update(prebuilt='minlcoe')
+    # system.optimize(savefig=False)
 
     # system.update(prebuilt='minlcoe')
     # system.parametric(params={
